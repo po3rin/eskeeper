@@ -1,0 +1,7 @@
+index:
+  test-v1: test-v1.json
+
+alias:
+  test:
+    - test-v1
+

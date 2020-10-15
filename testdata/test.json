@@ -1,0 +1,18 @@
+{
+    "mappings": {
+        "dynamic": false,
+        "properties": {
+            "id": {
+                "type": "long",
+                "index": true
+            },
+            "title": {
+                "type": "text"
+            },
+            "body": {
+                "type": "text"
+            }
+        }
+    }
+}
+
