@@ -52,4 +52,6 @@ func Sync(ctx context.Context, reader io.Reader) error {
 	if err != nil {
 		return errors.Wrap(err, "convert yaml to conf")
 	}
+	_ = conf
+	return nil
 }
