@@ -43,7 +43,7 @@ func (c *esclient) createIndex(ctx context.Context, conf config) error {
 		}
 		// alreadey exists
 		if res.StatusCode == 200 {
-			return nil
+			continue
 		}
 
 		f, err := os.Open(index.Mapping)
@@ -98,6 +98,13 @@ func (c *esclient) syncAlias(ctx context.Context, conf config) error {
 func aliasQuery(aliasName string, indices []string) map[string]interface{} {
 	Actions := make([]map[string]interface{}, 0, len(indices)+1)
 
+	Actions = append(Actions, map[string]interface{}{
+		"remove": map[string]interface{}{
+			"index": "*",
+			"alias": aliasName,
+		},
+	})
+
 	for _, index := range indices {
 		Actions = append(Actions, map[string]interface{}{
 			"add": map[string]interface{}{
@@ -106,13 +113,6 @@ func aliasQuery(aliasName string, indices []string) map[string]interface{} {
 			},
 		})
 	}
-
-	Actions = append(Actions, map[string]interface{}{
-		"remove": map[string]interface{}{
-			"index": "*",
-			"alias": aliasName,
-		},
-	})
 
 	return map[string]interface{}{
 		"actions": Actions,
