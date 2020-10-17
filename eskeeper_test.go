@@ -1,42 +1,40 @@
-package eskeeper_test
+package eskeeper
 
 import (
 	"os"
 	"reflect"
 
 	"testing"
-
-	"github.com/po3rin/eskeeper"
 )
 
 func TestYaml2Conf(t *testing.T) {
 	tests := []struct {
 		name string
 		yaml string
-		want eskeeper.Config
+		want config
 	}{
 		{
 			name: "simple",
 			yaml: "testdata/es.yaml",
-			want: eskeeper.Config{
-				Index: []eskeeper.Index{
-					eskeeper.Index{
+			want: config{
+				Indices: []index{
+					index{
 						Name:    "test-v1",
-						Mapping: "test.json",
+						Mapping: "testdata/test.json",
 					},
-					eskeeper.Index{
+					index{
 						Name:    "test-v2",
-						Mapping: "test.json",
+						Mapping: "testdata/test.json",
 					},
 				},
-				Alias: []eskeeper.Alias{
-					eskeeper.Alias{
-						Name:  "alias1",
-						Index: []string{"test-v1"},
+				Aliases: []alias{
+					alias{
+						Name:    "alias1",
+						Indices: []string{"test-v1"},
 					},
-					eskeeper.Alias{
-						Name:  "alias2",
-						Index: []string{"test-v1", "test-v2"},
+					alias{
+						Name:    "alias2",
+						Indices: []string{"test-v1", "test-v2"},
 					},
 				},
 			},
@@ -49,11 +47,11 @@ func TestYaml2Conf(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			got, err := eskeeper.Yaml2Conf(r)
+			got, err := Yaml2Conf(r)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !reflect.DeepEqual(*got, tt.want) {
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("\nwant: %+v\ngot : %+v\n", tt.want, got)
 			}
 		})

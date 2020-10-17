@@ -30,16 +30,16 @@ func newEsClient(urls []string, user, pass string) (*esclient, error) {
 	}, nil
 }
 
-func (c *esclient) createIndex(ctx context.Context, conf Config) error {
+func (c *esclient) createIndex(ctx context.Context, conf config) error {
 	create := c.client.Indices.Create
 	exists := c.client.Indices.Exists
-	for _, index := range conf.Index {
+	for _, index := range conf.Indices {
 		res, err := exists(
 			[]string{index.Name},
 			exists.WithContext(ctx),
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("check index exists: %w", err)
 		}
 		// alreadey exists
 		if res.StatusCode == 200 {
@@ -48,7 +48,7 @@ func (c *esclient) createIndex(ctx context.Context, conf Config) error {
 
 		f, err := os.Open(index.Mapping)
 		if err != nil {
-			return err
+			return fmt.Errorf("open mapping file: %w", err)
 		}
 
 		res, err = create(
@@ -57,7 +57,7 @@ func (c *esclient) createIndex(ctx context.Context, conf Config) error {
 			create.WithBody(f),
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("create index: %w", err)
 		}
 		if res.StatusCode != 200 {
 			body, err := ioutil.ReadAll(res.Body)
@@ -70,19 +70,19 @@ func (c *esclient) createIndex(ctx context.Context, conf Config) error {
 	return nil
 }
 
-func (c *esclient) syncAlias(ctx context.Context, conf Config) error {
+func (c *esclient) syncAlias(ctx context.Context, conf config) error {
 	i := c.client.Indices
-	for _, alias := range conf.Alias {
-		query := aliasQuery(alias.Name, alias.Index)
+	for _, alias := range conf.Aliases {
+		query := aliasQuery(alias.Name, alias.Indices)
 
 		var buf bytes.Buffer
 		if err := json.NewEncoder(&buf).Encode(query); err != nil {
-			return err
+			return fmt.Errorf("build query: %w", err)
 		}
 
 		res, err := i.UpdateAliases(&buf, i.UpdateAliases.WithContext(ctx))
 		if err != nil {
-			return err
+			return fmt.Errorf("upsert aliases: %w", err)
 		}
 		if res.StatusCode != 200 {
 			body, err := ioutil.ReadAll(res.Body)

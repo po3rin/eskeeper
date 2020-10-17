@@ -71,12 +71,12 @@ func TestMain(m *testing.M) {
 func TestCreateIndex(t *testing.T) {
 	tests := []struct {
 		name string
-		conf Config
+		conf config
 	}{
 		{
 			name: "simple",
-			conf: Config{
-				Index: []Index{
+			conf: config{
+				Indices: []index{
 					{
 						Name:    "create1",
 						Mapping: "testdata/test.json",
@@ -86,8 +86,8 @@ func TestCreateIndex(t *testing.T) {
 		},
 		{
 			name: "multi",
-			conf: Config{
-				Index: []Index{
+			conf: config{
+				Indices: []index{
 					{
 						Name:    "create2",
 						Mapping: "testdata/test.json",
@@ -101,8 +101,8 @@ func TestCreateIndex(t *testing.T) {
 		},
 		{
 			name: "idempotence",
-			conf: Config{
-				Index: []Index{
+			conf: config{
+				Indices: []index{
 					{
 						Name:    "idempotence",
 						Mapping: "testdata/test.json",
@@ -135,17 +135,17 @@ func TestCreateIndex(t *testing.T) {
 func TestSyncAlias(t *testing.T) {
 	tests := []struct {
 		name    string
-		conf    Config
+		conf    config
 		setup   func(tb testing.TB)
 		cleanup func(tb testing.TB)
 	}{
 		{
 			name: "simple",
-			conf: Config{
-				Alias: []Alias{
+			conf: config{
+				Aliases: []alias{
 					{
-						Name:  "test-alias",
-						Index: []string{"test-v1", "test-v2"},
+						Name:    "test-alias",
+						Indices: []string{"test-v1", "test-v2"},
 					},
 				},
 			},
@@ -156,11 +156,11 @@ func TestSyncAlias(t *testing.T) {
 		},
 		{
 			name: "switch",
-			conf: Config{
-				Alias: []Alias{
+			conf: config{
+				Aliases: []alias{
 					{
-						Name:  "test-alias",
-						Index: []string{"test-v3"},
+						Name:    "test-alias",
+						Indices: []string{"test-v3"},
 					},
 				},
 			},
