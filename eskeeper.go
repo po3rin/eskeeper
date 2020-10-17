@@ -42,17 +42,43 @@ func yaml2Conf(reader io.Reader) (config, error) {
 // Eskeeper manages indices & aliases.
 type Eskeeper struct {
 	client *esclient
+
+	// options
+	user string
+	pass string
+}
+
+// NewOption is optional func for eskeeper.New
+type NewOption func(*Eskeeper)
+
+// UserName is optional func for Elasticsearch user name.
+func UserName(name string) NewOption {
+	return func(e *Eskeeper) {
+		e.user = name
+	}
+}
+
+// Pass is optional func for Elasticsearch password.
+func Pass(pass string) NewOption {
+	return func(e *Eskeeper) {
+		e.pass = pass
+	}
 }
 
 // New inits Eskeeper.
-func New(urls []string, user, pass string) (*Eskeeper, error) {
-	es, err := newEsClient(urls, user, pass)
+func New(urls []string, opts ...NewOption) (*Eskeeper, error) {
+	eskeeper := &Eskeeper{}
+
+	for _, opt := range opts {
+		opt(eskeeper)
+	}
+
+	es, err := newEsClient(urls, eskeeper.user, eskeeper.pass)
 	if err != nil {
 		return nil, err
 	}
-	return &Eskeeper{
-		client: es,
-	}, nil
+	eskeeper.client = es
+	return eskeeper, nil
 }
 
 // Sync synchronizes config & Elasticsearch State.

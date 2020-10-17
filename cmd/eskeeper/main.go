@@ -13,7 +13,7 @@ var rootCmd = &cobra.Command{
 	Use:   "eskeeper",
 	Short: "eskeeper synchronizes index and alias with configuration files while ensuring idempotency.",
 	Run: func(cmd *cobra.Command, args []string) {
-		k, err := eskeeper.New([]string{"http://localhost:9200"}, "", "")
+		k, err := eskeeper.New([]string{"http://localhost:9200"})
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
