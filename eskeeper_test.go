@@ -3,6 +3,7 @@ package eskeeper_test
 import (
 	"os"
 	"reflect"
+
 	"testing"
 
 	"github.com/po3rin/eskeeper"
@@ -18,12 +19,24 @@ func TestYaml2Conf(t *testing.T) {
 			name: "simple",
 			yaml: "testdata/es.yaml",
 			want: eskeeper.Config{
-				Index: map[string]string{
-					"test-v1": "test-v1.json",
+				Index: []eskeeper.Index{
+					eskeeper.Index{
+						Name:    "test-v1",
+						Mapping: "test.json",
+					},
+					eskeeper.Index{
+						Name:    "test-v2",
+						Mapping: "test.json",
+					},
 				},
-				Alias: map[string][]string{
-					"test": []string{
-						"test-v1",
+				Alias: []eskeeper.Alias{
+					eskeeper.Alias{
+						Name:  "alias1",
+						Index: []string{"test-v1"},
+					},
+					eskeeper.Alias{
+						Name:  "alias2",
+						Index: []string{"test-v1", "test-v2"},
 					},
 				},
 			},
@@ -40,7 +53,7 @@ func TestYaml2Conf(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !reflect.DeepEqual(*got, tt.want) {
 				t.Errorf("\nwant: %+v\ngot : %+v\n", tt.want, got)
 			}
 		})

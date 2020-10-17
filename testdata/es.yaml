@@ -1,7 +1,17 @@
 index:
-  test-v1: test-v1.json
+  - name: test-v1
+    mapping: test.json
+
+  - name: test-v2
+    mapping: test.json
 
 alias:
-  test:
-    - test-v1
+  - name: alias1
+    index:
+      - test-v1
+
+  - name: alias2
+    index:
+      - test-v1
+      - test-v2
 

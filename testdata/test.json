@@ -1,6 +1,5 @@
 {
     "mappings": {
-        "dynamic": false,
         "properties": {
             "id": {
                 "type": "long",

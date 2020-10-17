@@ -1,48 +1,40 @@
 package eskeeper
 
 import (
-	"bytes"
 	"context"
-	"fmt"
 	"io"
+	"io/ioutil"
 
 	"github.com/goccy/go-yaml"
 	"github.com/pkg/errors"
 )
 
 type Config struct {
-	Index map[string]string   `json:"index"`
-	Alias map[string][]string `json:"alias"`
+	Index []Index `json:"index"`
+	Alias []Alias `json:"alias"`
 }
 
-func Yaml2Conf(reader io.Reader) (Config, error) {
-	var conf Config
+type Index struct {
+	Name    string `json:"name"`
+	Mapping string `json:"mapping"`
+}
 
-	bBuf := new(bytes.Buffer)
-	aBuf := io.TeeReader(reader, bBuf)
+type Alias struct {
+	Name  string   `json:"name"`
+	Index []string `json:"index"`
+}
 
-	indexPath, err := yaml.PathString("$.index")
+func Yaml2Conf(reader io.Reader) (*Config, error) {
+	conf := &Config{}
+
+	b, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return conf, errors.Wrap(err, "parse path query")
+		return nil, err
 	}
 
-	var index map[string]string
-	if err := indexPath.Read(aBuf, &index); err != nil {
-		return conf, errors.Wrap(err, "read yaml")
+	if err := yaml.Unmarshal(b, conf); err != nil {
+		return nil, err
 	}
-	conf.Index = index
-
-	aliasPath, err := yaml.PathString("$.alias")
-	if err != nil {
-		return conf, errors.Wrap(err, "parse path query")
-	}
-
-	var alias map[string][]string
-	if err := aliasPath.Read(bBuf, &alias); err != nil {
-		return conf, errors.Wrap(err, "read yaml")
-	}
-	fmt.Println(alias)
-	conf.Alias = alias
 
 	return conf, nil
 }
