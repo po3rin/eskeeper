@@ -1,6 +1,6 @@
 # eskeeper
 
-<img src="https://img.shields.io/badge/go-v1.15-blue.svg"/> [![GoDoc](https://godoc.org/github.com/po3rin/eskeeper?status.svg)](https://godoc.org/github.com/po3rin/eskeeper)
+<img src="https://img.shields.io/badge/go-v1.15-blue.svg"/> [![GoDoc](https://godoc.org/github.com/po3rin/eskeeper?status.svg)](https://godoc.org/github.com/po3rin/eskeeper) [![Apache-2.0](https://img.shields.io/github/license/po3rin/eskeeper)](LICENSE)
 
 *TODO: impliments*
 
