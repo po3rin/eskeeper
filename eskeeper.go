@@ -24,7 +24,7 @@ type alias struct {
 	Indices []string `json:"index"`
 }
 
-func Yaml2Conf(reader io.Reader) (config, error) {
+func yaml2Conf(reader io.Reader) (config, error) {
 	conf := config{}
 
 	b, err := ioutil.ReadAll(reader)
@@ -39,10 +39,12 @@ func Yaml2Conf(reader io.Reader) (config, error) {
 	return conf, nil
 }
 
+// Eskeeper manages indices & aliases.
 type Eskeeper struct {
 	client *esclient
 }
 
+// New inits Eskeeper.
 func New(urls []string, user, pass string) (*Eskeeper, error) {
 	es, err := newEsClient(urls, user, pass)
 	if err != nil {
@@ -53,8 +55,9 @@ func New(urls []string, user, pass string) (*Eskeeper, error) {
 	}, nil
 }
 
+// Sync synchronizes config & Elasticsearch State.
 func (e *Eskeeper) Sync(ctx context.Context, reader io.Reader) error {
-	conf, err := Yaml2Conf(reader)
+	conf, err := yaml2Conf(reader)
 	if err != nil {
 		return errors.Wrap(err, "convert yaml to conf")
 	}

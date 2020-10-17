@@ -47,7 +47,7 @@ func TestYaml2Conf(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			got, err := Yaml2Conf(r)
+			got, err := yaml2Conf(r)
 			if err != nil {
 				t.Fatal(err)
 			}
