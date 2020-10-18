@@ -4,7 +4,14 @@
 
 eskeeper synchronizes index and alias with configuration files while ensuring idempotency. It still only supports WRITE. DELETE is not yet supported because the operation of deleting persistent data is dangerous and needs to be implemented carefully. 
 
-## :muscle: Features
+## :muscle: Currently supports
+
+### mode
+
+- [x] CLI mode
+- [ ] Agent mode
+
+### sync 
 
 * index
 - [x] create
@@ -15,6 +22,7 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 - [x] create
 - [x] update (⚠️destructive change)
 - [ ] delete
+
 
 
 ## :four_leaf_clover: Quick Start
