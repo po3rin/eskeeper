@@ -40,14 +40,26 @@ alias:
 results
 
 ```bach
+curl localhost:9200/_cat/indices
+yellow open test-v1 ... 1 1 0 0 208b 208b
+yellow open test-v2 ... 1 1 0 0 208b 208b
+
 curl localhost:9200/_cat/aliases
 alias2 test-v2 - - - -
 alias1 test-v1 - - - -
 alias2 test-v1 - - - -
+```
 
-curl localhost:9200/_cat/indices
-yellow open test-v1 ... 1 1 0 0 208b 208b
-yellow open test-v2 ... 1 1 0 0 208b 208b
+## Environment value
+
+eskeeper supports flag & environment value.
+
+```bash
+# use flags
+eskeeper -u user -p pass -e=http://localhost:9200,http://localhost9300 < testdata/es.yaml
+
+# use env
+ESKEEPER_ES_USER=user ESKEEPER_ES_PASS=pass ESKEEPER_ES_URLS=http://localhost:9200 eskeeper < testdata/es.yaml
 ```
 
 ## Features

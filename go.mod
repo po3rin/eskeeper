@@ -19,6 +19,7 @@ require (
 	github.com/po3rin/bmfzf v0.0.1
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/spf13/cobra v1.0.0
+	github.com/spf13/viper v1.7.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 	golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6 // indirect
 	golang.org/x/text v0.3.3 // indirect
