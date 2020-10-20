@@ -30,49 +30,63 @@ func newEsClient(urls []string, user, pass string) (*esclient, error) {
 	}, nil
 }
 
-func (c *esclient) createIndex(ctx context.Context, conf config) error {
+func (c *esclient) createIndex(ctx context.Context, index index) error {
 	create := c.client.Indices.Create
 	exists := c.client.Indices.Exists
+
+	res, err := exists(
+		[]string{index.Name},
+		exists.WithContext(ctx),
+	)
+	if err != nil {
+		return fmt.Errorf("check index exists: %w", err)
+	}
+	// alreadey exists
+	if res.StatusCode == 200 {
+		return nil
+	}
+
+	f, err := os.Open(index.Mapping)
+	if err != nil {
+		return fmt.Errorf("open mapping file: %w", err)
+	}
+
+	res, err = create(
+		index.Name,
+		create.WithContext(ctx),
+		create.WithBody(f),
+	)
+	if err != nil {
+		return fmt.Errorf("create index: %w", err)
+	}
+	if res.StatusCode != 200 {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return fmt.Errorf("failed to create index [index= %v, statusCode=%v]", index.Name, res.StatusCode)
+		}
+		return fmt.Errorf("failed to create index [index= %v, statusCode=%v, res=%v]", index.Name, res.StatusCode, string(body))
+	}
+	return nil
+}
+
+// CLOSE_ONLY: close index
+// DELETE: delete index
+// DELETE_LIFECYCLE_POLICY add :wq
+func (c *esclient) deleteIndex(ctx context.Context, index index) error {
+	return nil
+}
+
+func (c *esclient) syncIndex(ctx context.Context, conf config) error {
 	for _, index := range conf.Indices {
-		res, err := exists(
-			[]string{index.Name},
-			exists.WithContext(ctx),
-		)
-		if err != nil {
-			return fmt.Errorf("check index exists: %w", err)
-		}
-		// alreadey exists
-		if res.StatusCode == 200 {
-			continue
-		}
-
-		f, err := os.Open(index.Mapping)
-		if err != nil {
-			return fmt.Errorf("open mapping file: %w", err)
-		}
-
-		res, err = create(
-			index.Name,
-			create.WithContext(ctx),
-			create.WithBody(f),
-		)
-		if err != nil {
-			return fmt.Errorf("create index: %w", err)
-		}
-		if res.StatusCode != 200 {
-			body, err := ioutil.ReadAll(res.Body)
-			if err != nil {
-				return fmt.Errorf("failed to create index [index= %v, statusCode=%v]", index.Name, res.StatusCode)
-			}
-			return fmt.Errorf("failed to create index [index= %v, statusCode=%v, res=%v]", index.Name, res.StatusCode, string(body))
-		}
+		c.createIndex(ctx, index)
 	}
 	return nil
 }
 
 func (c *esclient) syncAlias(ctx context.Context, conf config) error {
-	i := c.client.Indices
 	for _, alias := range conf.Aliases {
+		i := c.client.Indices
+
 		query := aliasQuery(alias.Name, alias.Indices)
 
 		var buf bytes.Buffer

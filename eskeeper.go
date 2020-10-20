@@ -77,6 +77,7 @@ func New(urls []string, opts ...NewOption) (*Eskeeper, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	eskeeper.client = es
 	return eskeeper, nil
 }
@@ -87,10 +88,12 @@ func (e *Eskeeper) Sync(ctx context.Context, reader io.Reader) error {
 	if err != nil {
 		return errors.Wrap(err, "convert yaml to conf")
 	}
-	err = e.client.createIndex(ctx, conf)
+
+	err = e.client.syncIndex(ctx, conf)
 	if err != nil {
 		return errors.Wrap(err, "sync indices")
 	}
+
 	err = e.client.syncAlias(ctx, conf)
 	if err != nil {
 		return errors.Wrap(err, "sync aliases")
