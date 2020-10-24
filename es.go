@@ -30,19 +30,30 @@ func newEsClient(urls []string, user, pass string) (*esclient, error) {
 	}, nil
 }
 
-func (c *esclient) createIndex(ctx context.Context, index index) error {
-	create := c.client.Indices.Create
+func (c *esclient) existIndex(ctx context.Context, index string) (bool, error) {
 	exists := c.client.Indices.Exists
 
 	res, err := exists(
-		[]string{index.Name},
+		[]string{index},
 		exists.WithContext(ctx),
 	)
 	if err != nil {
-		return fmt.Errorf("check index exists: %w", err)
+		return false, fmt.Errorf("check index exists: %w", err)
 	}
-	// alreadey exists
 	if res.StatusCode == 200 {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (c *esclient) createIndex(ctx context.Context, index index) error {
+	create := c.client.Indices.Create
+	ok, err := c.existIndex(ctx, index.Name)
+	if err != nil {
+		return err
+	}
+	// index already exists
+	if ok {
 		return nil
 	}
 
@@ -51,7 +62,7 @@ func (c *esclient) createIndex(ctx context.Context, index index) error {
 		return fmt.Errorf("open mapping file: %w", err)
 	}
 
-	res, err = create(
+	res, err := create(
 		index.Name,
 		create.WithContext(ctx),
 		create.WithBody(f),

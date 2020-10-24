@@ -187,6 +187,44 @@ func TestSyncAlias(t *testing.T) {
 	}
 }
 
+func TestExistAlias(t *testing.T) {
+	tests := []struct {
+		name    string
+		index   string
+		setup   func(tb testing.TB)
+		want    bool
+		cleanup func(tb testing.TB)
+	}{
+		{
+			name:  "simple",
+			index: "exist-v1",
+			setup: func(tb testing.TB) {
+				createTmpIndexHelper(tb, "exist-v1")
+			},
+			want: true,
+		},
+	}
+
+	es, err := newEsClient([]string{url}, "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			tt.setup(t)
+			ok, err := es.existIndex(ctx, tt.index)
+			if err != nil {
+				t.Error(err)
+			}
+			if ok != tt.want {
+				t.Errorf("want: %+v, got: %+v\n", tt.want, ok)
+			}
+		})
+	}
+}
+
 var testMapping = `{
     "mappings": {
         "properties": {
