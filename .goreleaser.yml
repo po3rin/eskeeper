@@ -1,4 +1,4 @@
-project_name: git-bump
+project_name: eskeeper
 env:
   - GO111MODULE=on
 before:
@@ -6,7 +6,7 @@ before:
     - go mod tidy
 builds:
   - main: .
-    binary: git-bump
+    binary: eskeeper
     ldflags:
       - -s -w
       - -X main.Version={{.Version}}
