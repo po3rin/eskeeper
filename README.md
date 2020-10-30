@@ -20,7 +20,7 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 
 * alias
 - [x] create
-- [x] update (⚠️destructive change)
+- [x] update
 - [ ] delete
 
 
