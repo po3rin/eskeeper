@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/elastic/go-elasticsearch"
 	"github.com/ory/dockertest"
@@ -68,6 +69,56 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+func TestPreCheck(t *testing.T) {
+	tests := []struct {
+		name    string
+		conf    config
+		wantErr bool
+	}{
+		{
+			name: "simple",
+			conf: config{
+				Indices: []index{
+					{
+						Name:    "precheck1",
+						Mapping: "testdata/test.json",
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid mapping",
+			conf: config{
+				Indices: []index{
+					{
+						Name:    "precheck2",
+						Mapping: "testdata/invalid.json",
+					},
+				},
+			},
+			wantErr: true,
+		},
+	}
+
+	es, err := newEsClient([]string{url}, "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			err := es.preCheck(ctx, tt.conf)
+			if tt.wantErr && err == nil {
+				t.Error("expect error")
+			}
+			if !tt.wantErr && err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
 func TestCreateIndex(t *testing.T) {
 	tests := []struct {
 		name string
@@ -144,7 +195,7 @@ func TestSyncAlias(t *testing.T) {
 			conf: config{
 				Aliases: []alias{
 					{
-						Name:    "test-alias",
+						Name:    "test-sync-alias",
 						Indices: []string{"test-v1", "test-v2"},
 					},
 				},
@@ -159,7 +210,7 @@ func TestSyncAlias(t *testing.T) {
 			conf: config{
 				Aliases: []alias{
 					{
-						Name:    "test-alias",
+						Name:    "test-sync-alias",
 						Indices: []string{"test-v3"},
 					},
 				},
@@ -187,7 +238,7 @@ func TestSyncAlias(t *testing.T) {
 	}
 }
 
-func TestExistAlias(t *testing.T) {
+func TestExistIndex(t *testing.T) {
 	tests := []struct {
 		name    string
 		index   string
@@ -202,6 +253,13 @@ func TestExistAlias(t *testing.T) {
 				createTmpIndexHelper(tb, "exist-v1")
 			},
 			want: true,
+		},
+		{
+			name:  "not-found",
+			index: "exist-v2",
+			setup: func(tb testing.TB) {
+			},
+			want: false,
 		},
 	}
 
@@ -220,6 +278,88 @@ func TestExistAlias(t *testing.T) {
 			}
 			if ok != tt.want {
 				t.Errorf("want: %+v, got: %+v\n", tt.want, ok)
+			}
+		})
+	}
+}
+
+func TestExistAlias(t *testing.T) {
+	tests := []struct {
+		name    string
+		alias   string
+		setup   func(tb testing.TB)
+		want    bool
+		cleanup func(tb testing.TB)
+	}{
+		{
+			name:  "simple",
+			alias: "alias-exist-v1",
+			setup: func(tb testing.TB) {
+				createTmpIndexHelper(tb, "alias-exist-index-v1")
+				createTmpIndexHelper(tb, "alias-exist-index-v2")
+				time.Sleep(10 * time.Second)
+				createTmpAliasHelper(tb, "alias-exist-v1", "alias-exist-index-v1")
+				createTmpAliasHelper(tb, "alias-exist-v1", "alias-exist-index-v2")
+			},
+			want: true,
+		},
+		{
+			name:  "not-found",
+			alias: "not-found",
+			setup: func(tb testing.TB) {
+			},
+			want: false,
+		},
+	}
+
+	es, err := newEsClient([]string{url}, "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			tt.setup(t)
+			ok, err := es.existAlias(ctx, tt.alias)
+			if err != nil {
+				t.Error(err)
+			}
+			if ok != tt.want {
+				t.Errorf("want: %+v, got: %+v\n", tt.want, ok)
+			}
+		})
+	}
+}
+
+func TestDeleteIndex(t *testing.T) {
+	tests := []struct {
+		name    string
+		index   string
+		setup   func(tb testing.TB)
+		cleanup func(tb testing.TB)
+	}{
+		{
+			name:  "simple",
+			index: "delete-v1",
+			setup: func(tb testing.TB) {
+				createTmpIndexHelper(tb, "delete-v1")
+			},
+		},
+	}
+
+	es, err := newEsClient([]string{url}, "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			tt.setup(t)
+			err := es.deleteIndex(ctx, tt.index)
+			if err != nil {
+				t.Error(err)
 			}
 		})
 	}
@@ -265,7 +405,41 @@ func createTmpIndexHelper(tb testing.TB, name string) {
 		if err != nil {
 			tb.Fatal(err)
 		}
-		tb.Fatalf("failed to create index [index= %v, statusCode=%v, res=%v]", name, res.StatusCode, string(body))
+		tb.Fatalf("failed to create index [index=%v, statusCode=%v, res=%v]", name, res.StatusCode, string(body))
+	}
+
+}
+
+var testAliasQuery = `
+{
+  "actions" : [
+    { "add" : { "index" : "%v", "alias" : "%v" } }
+  ]
+}`
+
+func createTmpAliasHelper(tb testing.TB, name string, index string) {
+	tb.Helper()
+	conf := elasticsearch.Config{
+		Addresses: []string{url},
+	}
+	es, err := elasticsearch.NewClient(conf)
+	if err != nil {
+		tb.Fatal(err)
+	}
+
+	res, err := es.Indices.UpdateAliases(
+		strings.NewReader(fmt.Sprintf(testAliasQuery, index, name)),
+	)
+	if err != nil {
+		tb.Fatal(err)
+	}
+
+	if res.StatusCode != 200 {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			tb.Fatal(err)
+		}
+		tb.Fatalf("failed to create alias [index= %v, statusCode=%v, res=%v]", name, res.StatusCode, string(body))
 	}
 
 }

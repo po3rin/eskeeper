@@ -3,41 +3,9 @@ package eskeeper
 import (
 	"context"
 	"io"
-	"io/ioutil"
 
-	"github.com/goccy/go-yaml"
 	"github.com/pkg/errors"
 )
-
-type config struct {
-	Indices []index `json:"index"`
-	Aliases []alias `json:"alias"`
-}
-
-type index struct {
-	Name    string `json:"name"`
-	Mapping string `json:"mapping"`
-}
-
-type alias struct {
-	Name    string   `json:"name"`
-	Indices []string `json:"index"`
-}
-
-func yaml2Conf(reader io.Reader) (config, error) {
-	conf := config{}
-
-	b, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return conf, err
-	}
-
-	if err := yaml.Unmarshal(b, &conf); err != nil {
-		return conf, err
-	}
-
-	return conf, nil
-}
 
 // Eskeeper manages indices & aliases.
 type Eskeeper struct {
@@ -89,6 +57,16 @@ func (e *Eskeeper) Sync(ctx context.Context, reader io.Reader) error {
 		return errors.Wrap(err, "convert yaml to conf")
 	}
 
+	err = validateConfigFormat(conf)
+	if err != nil {
+		return errors.Wrap(err, "validate config")
+	}
+
+	err = e.client.preCheck(ctx, conf)
+	if err != nil {
+		return errors.Wrap(err, "pre-check")
+	}
+
 	err = e.client.syncIndex(ctx, conf)
 	if err != nil {
 		return errors.Wrap(err, "sync indices")
@@ -97,6 +75,24 @@ func (e *Eskeeper) Sync(ctx context.Context, reader io.Reader) error {
 	err = e.client.syncAlias(ctx, conf)
 	if err != nil {
 		return errors.Wrap(err, "sync aliases")
+	}
+
+	err = e.client.postCheck(ctx, conf)
+	if err != nil {
+		return errors.Wrap(err, "post-check")
+	}
+	return nil
+}
+
+// Validate validates cofig.
+func (e *Eskeeper) Validate(ctx context.Context, reader io.Reader) error {
+	conf, err := yaml2Conf(reader)
+	if err != nil {
+		return errors.Wrap(err, "convert yaml to conf")
+	}
+	err = validateConfigFormat(conf)
+	if err != nil {
+		return errors.Wrap(err, "validate config")
 	}
 	return nil
 }

@@ -18,21 +18,21 @@ func TestYaml2Conf(t *testing.T) {
 			yaml: "testdata/es.yaml",
 			want: config{
 				Indices: []index{
-					index{
+					{
 						Name:    "test-v1",
 						Mapping: "testdata/test.json",
 					},
-					index{
+					{
 						Name:    "test-v2",
 						Mapping: "testdata/test.json",
 					},
 				},
 				Aliases: []alias{
-					alias{
+					{
 						Name:    "alias1",
 						Indices: []string{"test-v1"},
 					},
-					alias{
+					{
 						Name:    "alias2",
 						Indices: []string{"test-v1", "test-v2"},
 					},

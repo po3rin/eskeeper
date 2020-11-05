@@ -24,7 +24,6 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 - [ ] delete
 
 
-
 ## :four_leaf_clover: Quick Start
 
 eskeeper recieves yaml format data form stdin.

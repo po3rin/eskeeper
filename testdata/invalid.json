@@ -1,0 +1,17 @@
+{
+    "mappings": {
+        "roperties": {
+            "id": {
+                "type": "long",
+                "index": true
+            },
+            "title": {
+                "type": "text"
+            },
+            "body": {
+                "type": "text"
+            }
+        }
+    }
+}
+
