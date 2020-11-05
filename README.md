@@ -23,7 +23,7 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 - [x] update
 - [ ] delete
 
-## :mag_right: stages
+## :mag_right: Stages
 
 eskeeper process is divided into four stages.
 
