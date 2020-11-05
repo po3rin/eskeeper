@@ -23,6 +23,19 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 - [x] update
 - [ ] delete
 
+## :mag_right: stages
+
+eskeeper process is divided into four stages.
+
+```bash
+validation config stage # validation config format
+↓
+pre-check stage # check creating process and mapping
+↓
+sync stage # sync index and alias with config
+↓
+post-check stage # check index and alias has created or update
+```
 
 ## :four_leaf_clover: Quick Start
 
