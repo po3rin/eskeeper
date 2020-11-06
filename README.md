@@ -23,19 +23,6 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 - [x] update
 - [ ] delete
 
-## :mag_right: Stages
-
-eskeeper process is divided into four stages.
-
-```bash
-validation config stage # validation config format
-↓
-pre-check stage # check creating process and mapping
-↓
-sync stage # sync index and alias with config
-↓
-post-check stage # check index and alias has created or update
-```
 
 ## :four_leaf_clover: Quick Start
 
@@ -92,6 +79,25 @@ eskeeper -u user -p pass -e=http://localhost:9200,http://localhost9300 < testdat
 # use env
 ESKEEPER_ES_USER=user ESKEEPER_ES_PASS=pass ESKEEPER_ES_URLS=http://localhost:9200 eskeeper < testdata/es.yaml
 ```
+
+## :mag_right: Stages
+
+eskeeper process is divided into four stages.
+
+#### validation config stage
+* Validates config yaml format
+
+#### pre-check stage 
+
+* Check if mapping file is valid format
+* Check if there is an index for alias  
+
+#### sync stage
+* Sync indices and aliases with config
+
+#### post-check stage
+* Check if indices & aliases has been created
+
 
 ## :triangular_flag_on_post: Contributing
 
