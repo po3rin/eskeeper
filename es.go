@@ -33,7 +33,12 @@ func newEsClient(urls []string, user, pass string) (*esclient, error) {
 
 // TODO: alias pre-check
 func (c *esclient) preCheck(ctx context.Context, conf config) error {
+	// use alias pre-check
+	createIndices := make(map[string]struct{}, 0)
+
 	for _, ix := range conf.Indices {
+		createIndices[ix.Name] = struct{}{}
+
 		// generate uuid for pre-check create index
 		u2, err := uuid.NewV4()
 		if err != nil {
@@ -55,6 +60,23 @@ func (c *esclient) preCheck(ctx context.Context, conf config) error {
 			return fmt.Errorf("pre-check: delete pre-created index: %w", err)
 		}
 	}
+
+	// check target index exists
+	for _, alias := range conf.Aliases {
+		for _, index := range alias.Indices {
+			if _, ok := createIndices[index]; ok {
+				continue
+			}
+			ok, err := c.existIndex(ctx, index)
+			if err != nil {
+				return fmt.Errorf("pre-check: check index %v exists for alias %v: %w", index, alias.Name, err)
+			}
+			if !ok {
+				return fmt.Errorf("pre-check: index %v for alias %v is not found", index, alias.Name)
+			}
+		}
+	}
+
 	return nil
 }
 
