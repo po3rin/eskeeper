@@ -88,12 +88,33 @@ func TestPreCheck(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "invalid mapping",
+			name: "invalid-field",
 			conf: config{
 				Indices: []index{
 					{
 						Name:    "precheck2",
 						Mapping: "testdata/invalid.json",
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "not-found-index",
+			conf: config{
+				Indices: []index{
+					{
+						Name:    "precheck3",
+						Mapping: "testdata/invalid.json",
+					},
+				},
+				Aliases: []alias{
+					{
+						Name: "precheck-alias",
+						Indices: []string{
+							"precheck3",
+							"precheck4", // not found
+						},
 					},
 				},
 			},
