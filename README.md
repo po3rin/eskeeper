@@ -102,3 +102,7 @@ eskeeper process is divided into four stages.
 ## :triangular_flag_on_post: Contributing
 
 Did you find something technically wrong, something to fix, or something? Please give me Issue or Pull Request !!
+
+### Test
+
+eskeeper's test uses [github.com/ory/dockertest](github.com/ory/dockertest). So you need docker to test.

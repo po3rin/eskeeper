@@ -67,12 +67,12 @@ func (e *Eskeeper) Sync(ctx context.Context, reader io.Reader) error {
 		return errors.Wrap(err, "pre-check")
 	}
 
-	err = e.client.syncIndex(ctx, conf)
+	err = e.client.syncIndices(ctx, conf)
 	if err != nil {
 		return errors.Wrap(err, "sync indices")
 	}
 
-	err = e.client.syncAlias(ctx, conf)
+	err = e.client.syncAliases(ctx, conf)
 	if err != nil {
 		return errors.Wrap(err, "sync aliases")
 	}
