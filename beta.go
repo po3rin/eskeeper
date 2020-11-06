@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 
 	"github.com/Cside/jsondiff"
 )
+
+type indexConfigWithName map[string]indexConfig
 
 type indexConfig struct {
 	Settings map[string]interface{} `json:"settings"`
@@ -20,6 +23,7 @@ func (c *esclient) index(ctx context.Context, index index) ([]byte, error) {
 	res, err := get(
 		[]string{index.Name},
 		get.WithContext(ctx),
+		get.WithFlatSettings(true),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("get %v settings: %w", index.Name, err)
@@ -39,74 +43,96 @@ func (c *esclient) index(ctx context.Context, index index) ([]byte, error) {
 	return b, nil
 }
 
-func (c *esclient) settings(ctx context.Context, index index) ([]byte, error) {
-	getSettings := c.client.Indices.GetSettings
-	res, err := getSettings(
-		getSettings.WithIndex(index.Name),
-		getSettings.WithContext(ctx),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("get %v settings: %w", index.Name, err)
-	}
-	if res.StatusCode != 200 {
-		body, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return nil, fmt.Errorf("get %v settings: %w", index.Name, err)
-		}
-		return nil, fmt.Errorf("get %v settings: %v", index.Name, string(body))
-	}
+// func (c *esclient) settings(ctx context.Context, index index) ([]byte, error) {
+// 	getSettings := c.client.Indices.GetSettings
+// 	res, err := getSettings(
+// 		getSettings.WithIndex(index.Name),
+// 		getSettings.WithContext(ctx),
+// 	)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("get %v settings: %w", index.Name, err)
+// 	}
+// 	if res.StatusCode != 200 {
+// 		body, err := ioutil.ReadAll(res.Body)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("get %v settings: %w", index.Name, err)
+// 		}
+// 		return nil, fmt.Errorf("get %v settings: %v", index.Name, string(body))
+// 	}
 
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("get %v settings: %w", index.Name, err)
-	}
-	return b, nil
-}
+// 	b, err := ioutil.ReadAll(res.Body)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("get %v settings: %w", index.Name, err)
+// 	}
+// 	return b, nil
+// }
 
-func (c *esclient) mapping(ctx context.Context, index index) ([]byte, error) {
-	getMapping := c.client.Indices.GetMapping
-	res, err := getMapping(
-		getMapping.WithIndex(index.Name),
-		getMapping.WithContext(ctx),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("get %v mapping: %w", index.Name, err)
-	}
-	if res.StatusCode != 200 {
-		body, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return nil, fmt.Errorf("get %v mapping: %w", index.Name, err)
-		}
-		return nil, fmt.Errorf("get %v mapping: %v", index.Name, string(body))
-	}
+// func (c *esclient) mapping(ctx context.Context, index index) ([]byte, error) {
+// 	getMapping := c.client.Indices.GetMapping
+// 	res, err := getMapping(
+// 		getMapping.WithIndex(index.Name),
+// 		getMapping.WithContext(ctx),
+// 	)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("get %v mapping: %w", index.Name, err)
+// 	}
+// 	if res.StatusCode != 200 {
+// 		body, err := ioutil.ReadAll(res.Body)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("get %v mapping: %w", index.Name, err)
+// 		}
+// 		return nil, fmt.Errorf("get %v mapping: %v", index.Name, string(body))
+// 	}
 
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("get %v settings: %w", index.Name, err)
-	}
-	return b, nil
-}
+// 	b, err := ioutil.ReadAll(res.Body)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("get %v settings: %w", index.Name, err)
+// 	}
+// 	fmt.Println(string(b))
+// 	return b, nil
+// }
 
-func (c *esclient) equalSettings(ctx context.Context, index index, settingJSON []byte) (bool, error) {
-	m, err := c.settings(ctx, index)
-	if err != nil {
-		return false, fmt.Errorf("get setting: %w", err)
-	}
+// func (c *esclient) equalSettings(ctx context.Context, index index, settingJSON []byte) (bool, error) {
+// 	m, err := c.settings(ctx, index)
+// 	if err != nil {
+// 		return false, fmt.Errorf("get setting: %w", err)
+// 	}
 
-	if diff := jsondiff.Diff(m, settingJSON); diff != "" {
-		// fmt.Printf("detect settings diff:\n%s", diff)
-		return false, nil
-	}
-	return true, nil
-}
+// 	if diff := jsondiff.Diff(m, settingJSON); diff != "" {
+// 		// fmt.Printf("detect settings diff:\n%s", diff)
+// 		return false, nil
+// 	}
+// 	return true, nil
+// }
 
-func (c *esclient) equalMapping(ctx context.Context, index index, mappingsJSON []byte) (bool, error) {
-	m, err := c.mapping(ctx, index)
+func (c *esclient) equalMappingsProperties(ctx context.Context, index index, mappingsJSON []byte) (bool, error) {
+	res, err := c.index(ctx, index)
 	if err != nil {
 		return false, fmt.Errorf("get mappings: %w", err)
 	}
 
-	if diff := jsondiff.Diff(m, mappingsJSON); diff != "" {
+	fmt.Println(string(res))
+
+	gotConf := make(indexConfigWithName, 0)
+
+	err = json.Unmarshal(res, &gotConf)
+	if err != nil {
+		return false, fmt.Errorf("unmarshal mapping json: %w", err)
+	}
+
+	v, ok := gotConf[index.Name]
+	if !ok {
+		return false, errors.New("get index response dose not contain index name field")
+	}
+
+	fmt.Println(v)
+
+	b, err := json.Marshal(v.Mappings)
+	if err != nil {
+		return false, fmt.Errorf("marshal properties json: %w", err)
+	}
+
+	if diff := jsondiff.Diff(b, mappingsJSON); diff != "" {
 		// fmt.Printf("detect mapping diff:\n%s", diff)
 		return false, nil
 
@@ -116,7 +142,7 @@ func (c *esclient) equalMapping(ctx context.Context, index index, mappingsJSON [
 
 func (c *esclient) updateIndex(ctx context.Context, index index) error {
 	putMapping := c.client.Indices.PutMapping
-	putSetting := c.client.Indices.PutSettings
+	// putSetting := c.client.Indices.PutSettings
 
 	b, err := ioutil.ReadFile(index.Mapping)
 	if err != nil {
@@ -139,7 +165,7 @@ func (c *esclient) updateIndex(ctx context.Context, index index) error {
 			return fmt.Errorf("marshal mappings json: %w", err)
 		}
 
-		ok, err := c.equalMapping(ctx, index, j)
+		ok, err := c.equalMappingsProperties(ctx, index, j)
 		if err != nil {
 			return err
 		}
@@ -163,41 +189,41 @@ func (c *esclient) updateIndex(ctx context.Context, index index) error {
 		}
 	}
 
-	// setting -------
-	if config.Settings == nil {
-		// dose not contain
-		// return fmt.Errorf("get settings from file: %w", err)
-		return nil
-	}
+	// // setting -------
+	// if config.Settings == nil {
+	// 	// dose not contain
+	// 	// return fmt.Errorf("get settings from file: %w", err)
+	// 	return nil
+	// }
 
-	j, err := json.Marshal(config.Settings)
-	if err != nil {
-		return fmt.Errorf("marshal mappings json: %w", err)
-	}
+	// j, err := json.Marshal(config.Settings)
+	// if err != nil {
+	// 	return fmt.Errorf("marshal mappings json: %w", err)
+	// }
 
-	ok, err := c.equalSettings(ctx, index, j)
-	if err != nil {
-		return err
-	}
-	if ok {
-		return nil
-	}
+	// ok, err := c.equalSettings(ctx, index, j)
+	// if err != nil {
+	// 	return err
+	// }
+	// if ok {
+	// 	return nil
+	// }
 
-	res, err := putSetting(
-		bytes.NewReader(j),
-		putSetting.WithIndex(index.Name),
-		putSetting.WithContext(ctx),
-	)
-	if err != nil {
-		return fmt.Errorf("update %v setting: %w", index, err)
-	}
-	if res.StatusCode != 200 {
-		body, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return fmt.Errorf("update %v setting: %w", index.Name, err)
-		}
-		return fmt.Errorf("update %v setting: %v", index.Name, string(body))
-	}
+	// res, err := putSetting(
+	// 	bytes.NewReader(j),
+	// 	putSetting.WithIndex(index.Name),
+	// 	putSetting.WithContext(ctx),
+	// )
+	// if err != nil {
+	// 	return fmt.Errorf("update %v setting: %w", index, err)
+	// }
+	// if res.StatusCode != 200 {
+	// 	body, err := ioutil.ReadAll(res.Body)
+	// 	if err != nil {
+	// 		return fmt.Errorf("update %v setting: %w", index.Name, err)
+	// 	}
+	// 	return fmt.Errorf("update %v setting: %v", index.Name, string(body))
+	// }
 
 	return nil
 }
