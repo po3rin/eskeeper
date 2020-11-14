@@ -5,6 +5,10 @@ index:
   - name: test-v2
     mapping: testdata/test.json
 
+  - name: close-v1
+    mapping: testdata/test.json
+    status: close
+
 alias:
   - name: alias1
     index:
