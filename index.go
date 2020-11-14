@@ -31,6 +31,10 @@ func (c *esclient) syncIndex(ctx context.Context, index index) error {
 	}
 	// index already exists
 	if ok {
+		err := c.indexStatusAction(ctx, index)
+		if err != nil {
+			return fmt.Errorf("index status action: %w", err)
+		}
 		return nil
 	}
 
@@ -54,12 +58,16 @@ func (c *esclient) syncIndex(ctx context.Context, index index) error {
 		}
 		return fmt.Errorf("failed to create index [index=%v, statusCode=%v, res=%v]", index.Name, res.StatusCode, string(body))
 	}
+	err = c.indexStatusAction(ctx, index)
+	if err != nil {
+		return fmt.Errorf("crearted index status action: %w", err)
+	}
 	return nil
 }
 
 func (c *esclient) deleteIndex(ctx context.Context, index string) error {
 	delete := c.client.Indices.Delete
-	res, err := delete([]string{index})
+	res, err := delete([]string{index}, delete.WithContext(ctx))
 	if err != nil {
 		return fmt.Errorf("delete index: %w", err)
 	}
@@ -69,6 +77,26 @@ func (c *esclient) deleteIndex(ctx context.Context, index string) error {
 			return fmt.Errorf("failed to delete index [index= %v, statusCode=%v]", index, res.StatusCode)
 		}
 		return fmt.Errorf("failed to delete index [index= %v, statusCode=%v, res=%v]", index, res.StatusCode, string(body))
+	}
+	return nil
+}
+
+func (c *esclient) indexStatusAction(ctx context.Context, index index) error {
+	switch index.Status {
+	case "close":
+		close := c.client.Indices.Close
+		res, err := close([]string{index.Name}, close.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("close index: %w", err)
+		}
+		if res.StatusCode != 200 {
+			body, err := ioutil.ReadAll(res.Body)
+			if err != nil {
+				return fmt.Errorf("failed to close index [index= %v, statusCode=%v]", index, res.StatusCode)
+			}
+			return fmt.Errorf("failed to close index [index= %v, statusCode=%v, res=%v]", index, res.StatusCode, string(body))
+		}
+	default:
 	}
 	return nil
 }
