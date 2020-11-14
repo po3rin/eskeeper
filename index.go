@@ -29,38 +29,42 @@ func (c *esclient) syncIndex(ctx context.Context, index index) error {
 	if err != nil {
 		return err
 	}
-	// index already exists
-	if ok {
-		err := c.indexStatusAction(ctx, index)
+
+	// index dose not exist.
+	if !ok {
+		f, err := os.Open(index.Mapping)
 		if err != nil {
-			return fmt.Errorf("index status action: %w", err)
+			return fmt.Errorf("open mapping file: %w", err)
+		}
+
+		res, err := create(
+			index.Name,
+			create.WithContext(ctx),
+			create.WithBody(f),
+		)
+		if err != nil {
+			return fmt.Errorf("create index: %w", err)
+		}
+		if res.StatusCode != 200 {
+			body, err := ioutil.ReadAll(res.Body)
+			if err != nil {
+				return fmt.Errorf("failed to create index [index=%v, statusCode=%v]", index.Name, res.StatusCode)
+			}
+			return fmt.Errorf("failed to create index [index=%v, statusCode=%v, res=%v]", index.Name, res.StatusCode, string(body))
 		}
 		return nil
 	}
 
-	f, err := os.Open(index.Mapping)
-	if err != nil {
-		return fmt.Errorf("open mapping file: %w", err)
-	}
+	// index already exists.
 
-	res, err := create(
-		index.Name,
-		create.WithContext(ctx),
-		create.WithBody(f),
-	)
-	if err != nil {
-		return fmt.Errorf("create index: %w", err)
+	// Since downtime may occur when switching aliases, only open is processed before switching aliases.
+	// TODO: refactoring.
+	if index.Status == "close" {
+		return nil
 	}
-	if res.StatusCode != 200 {
-		body, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return fmt.Errorf("failed to create index [index=%v, statusCode=%v]", index.Name, res.StatusCode)
-		}
-		return fmt.Errorf("failed to create index [index=%v, statusCode=%v, res=%v]", index.Name, res.StatusCode, string(body))
-	}
-	err = c.indexStatusAction(ctx, index)
+	err = c.openIndex(ctx, index)
 	if err != nil {
-		return fmt.Errorf("crearted index status action: %w", err)
+		return fmt.Errorf("open index: %w", err)
 	}
 	return nil
 }
@@ -81,21 +85,38 @@ func (c *esclient) deleteIndex(ctx context.Context, index string) error {
 	return nil
 }
 
-func (c *esclient) indexStatusAction(ctx context.Context, index index) error {
-	switch index.Status {
-	case "close":
-		err := c.closeIndex(ctx, index)
-		if err != nil {
-			return fmt.Errorf("close index: %w", err)
-		}
-	default:
-		err := c.openIndex(ctx, index)
-		if err != nil {
-			return fmt.Errorf("close index: %w", err)
+func (c *esclient) syncCloseStatus(ctx context.Context, conf config) error {
+	for _, index := range conf.Indices {
+		if index.Status == "close" {
+			err := c.closeIndex(ctx, index)
+			if err != nil {
+				return fmt.Errorf("crearted index status action: %w", err)
+			}
 		}
 	}
 	return nil
 }
+
+// func (c *esclient) indexStatusAction(ctx context.Context, index index) error {
+// 	switch index.Status {
+// 	case "close":
+// 		err := c.closeIndex(ctx, index)
+// 		if err != nil {
+// 			return fmt.Errorf("close index: %w", err)
+// 		}
+// 	case "open":
+// 		err := c.openIndex(ctx, index)
+// 		if err != nil {
+// 			return fmt.Errorf("open index: %w", err)
+// 		}
+// 	default:
+// 		err := c.openIndex(ctx, index)
+// 		if err != nil {
+// 			return fmt.Errorf("open index: %w", err)
+// 		}
+// 	}
+// 	return nil
+// }
 
 func (c *esclient) closeIndex(ctx context.Context, index index) error {
 	close := c.client.Indices.Close

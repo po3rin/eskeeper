@@ -203,3 +203,45 @@ func TestDeleteIndex(t *testing.T) {
 		})
 	}
 }
+
+func TestSyncCloseStatus(t *testing.T) {
+	tests := []struct {
+		name  string
+		conf  config
+		setup func(tb testing.TB)
+	}{
+		{
+			name: "exists close",
+			conf: config{
+				Indices: []index{
+					{
+						Name:    "sync-close-v1",
+						Mapping: "testdata/test.json",
+						Status:  "close",
+					},
+				},
+			},
+			setup: func(tb testing.TB) {
+				createTmpIndexHelper(tb, "sync-close-v1")
+			},
+		},
+	}
+
+	es, err := newEsClient([]string{url}, "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			if tt.setup != nil {
+				tt.setup(t)
+			}
+			err := es.syncCloseStatus(ctx, tt.conf)
+			if err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}

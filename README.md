@@ -9,7 +9,7 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 ### mode
 
 - [x] CLI mode
-- [x] Index status(close only)
+- [x] Index status(open/close only)
 - [ ] Agent mode
 
 ### sync 
@@ -100,6 +100,21 @@ eskeeper process is divided into four stages.
 
 #### sync stage
 * Sync indices and aliases with config
+
+The order of synchronization is as follows.
+
+```
+create index
+↓
+open index
+↓
+update alias
+↓
+close index
+```
+
+Index close operation should be done after switching the alias.
+Because there can be downtime before switching aliases.
 
 #### post-check stage
 * Check if indices & aliases has been created
