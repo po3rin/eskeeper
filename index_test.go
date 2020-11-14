@@ -79,6 +79,32 @@ func TestSyncIndices(t *testing.T) {
 				createTmpIndexHelper(tb, "create-with-close-v2")
 			},
 		},
+		{
+			name: "open",
+			conf: config{
+				Indices: []index{
+					{
+						Name:    "open-v1",
+						Mapping: "testdata/test.json",
+					},
+				},
+			},
+			setup: func(tb testing.TB) {
+				createTmpIndexHelper(tb, "open-v1")
+				closeIndex(tb, "open-v1")
+			},
+		},
+		{
+			name: "open-already-open",
+			conf: config{
+				Indices: []index{
+					{
+						Name:    "open-already-open-v1",
+						Mapping: "testdata/test.json",
+					},
+				},
+			},
+		},
 	}
 
 	es, err := newEsClient([]string{url}, "", "")
@@ -89,6 +115,9 @@ func TestSyncIndices(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
+			if tt.setup != nil {
+				tt.setup(t)
+			}
 			err := es.syncIndices(ctx, tt.conf)
 			if err != nil {
 				t.Error(err)

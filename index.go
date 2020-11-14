@@ -97,6 +97,18 @@ func (c *esclient) indexStatusAction(ctx context.Context, index index) error {
 			return fmt.Errorf("failed to close index [index= %v, statusCode=%v, res=%v]", index, res.StatusCode, string(body))
 		}
 	default:
+		open := c.client.Indices.Open
+		res, err := open([]string{index.Name}, open.WithContext(ctx))
+		if err != nil {
+			return fmt.Errorf("open index: %w", err)
+		}
+		if res.StatusCode != 200 {
+			body, err := ioutil.ReadAll(res.Body)
+			if err != nil {
+				return fmt.Errorf("failed to open index [index= %v, statusCode=%v]", index, res.StatusCode)
+			}
+			return fmt.Errorf("failed to open index [index= %v, statusCode=%v, res=%v]", index, res.StatusCode, string(body))
+		}
 	}
 	return nil
 }
