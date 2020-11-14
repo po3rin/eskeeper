@@ -10,6 +10,12 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
+var status = map[string]struct{}{
+	"open":  struct{}{},
+	"close": struct{}{},
+	"":      struct{}{},
+}
+
 type config struct {
 	Indices []index `json:"index"`
 	Aliases []alias `json:"alias"` // supports close only
@@ -65,6 +71,10 @@ func validateConfigFormat(c config) error {
 			if err := json.Unmarshal(m, &jsonStr); err != nil {
 				return fmt.Errorf("mapping json is invalid: %w", err)
 			}
+		}
+		_, ok := status[index.Status]
+		if !ok {
+			return fmt.Errorf("unsupported status %v", index.Status)
 		}
 	}
 

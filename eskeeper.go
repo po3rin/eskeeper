@@ -77,6 +77,11 @@ func (e *Eskeeper) Sync(ctx context.Context, reader io.Reader) error {
 		return errors.Wrap(err, "sync aliases")
 	}
 
+	err = e.client.syncCloseStatus(ctx, conf)
+	if err != nil {
+		return errors.Wrap(err, "sync aliases")
+	}
+
 	err = e.client.postCheck(ctx, conf)
 	if err != nil {
 		return errors.Wrap(err, "post-check")
