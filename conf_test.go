@@ -26,6 +26,11 @@ func TestYaml2Conf(t *testing.T) {
 						Name:    "test-v2",
 						Mapping: "testdata/test.json",
 					},
+					{
+						Name:    "close-v1",
+						Mapping: "testdata/test.json",
+						Status:  "close",
+					},
 				},
 				Aliases: []alias{
 					{

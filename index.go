@@ -84,19 +84,47 @@ func (c *esclient) deleteIndex(ctx context.Context, index string) error {
 func (c *esclient) indexStatusAction(ctx context.Context, index index) error {
 	switch index.Status {
 	case "close":
-		close := c.client.Indices.Close
-		res, err := close([]string{index.Name}, close.WithContext(ctx))
+		err := c.closeIndex(ctx, index)
 		if err != nil {
 			return fmt.Errorf("close index: %w", err)
 		}
-		if res.StatusCode != 200 {
-			body, err := ioutil.ReadAll(res.Body)
-			if err != nil {
-				return fmt.Errorf("failed to close index [index= %v, statusCode=%v]", index, res.StatusCode)
-			}
-			return fmt.Errorf("failed to close index [index= %v, statusCode=%v, res=%v]", index, res.StatusCode, string(body))
-		}
 	default:
+		err := c.openIndex(ctx, index)
+		if err != nil {
+			return fmt.Errorf("close index: %w", err)
+		}
+	}
+	return nil
+}
+
+func (c *esclient) closeIndex(ctx context.Context, index index) error {
+	close := c.client.Indices.Close
+	res, err := close([]string{index.Name}, close.WithContext(ctx))
+	if err != nil {
+		return fmt.Errorf("close index: %w", err)
+	}
+	if res.StatusCode != 200 {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return fmt.Errorf("failed to close index [index= %v, statusCode=%v]", index, res.StatusCode)
+		}
+		return fmt.Errorf("failed to close index [index= %v, statusCode=%v, res=%v]", index, res.StatusCode, string(body))
+	}
+	return nil
+}
+
+func (c *esclient) openIndex(ctx context.Context, index index) error {
+	open := c.client.Indices.Open
+	res, err := open([]string{index.Name}, open.WithContext(ctx))
+	if err != nil {
+		return fmt.Errorf("open index: %w", err)
+	}
+	if res.StatusCode != 200 {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return fmt.Errorf("failed to open index [index= %v, statusCode=%v]", index, res.StatusCode)
+		}
+		return fmt.Errorf("failed to open index [index= %v, statusCode=%v, res=%v]", index, res.StatusCode, string(body))
 	}
 	return nil
 }
