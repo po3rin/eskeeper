@@ -7,8 +7,9 @@ import (
 
 func TestSyncIndices(t *testing.T) {
 	tests := []struct {
-		name string
-		conf config
+		name  string
+		conf  config
+		setup func(tb testing.TB)
 	}{
 		{
 			name: "simple",
@@ -49,6 +50,33 @@ func TestSyncIndices(t *testing.T) {
 						Mapping: "testdata/test.json",
 					},
 				},
+			},
+		},
+		{
+			name: "close",
+			conf: config{
+				Indices: []index{
+					{
+						Name:    "create-with-close-v1",
+						Mapping: "testdata/test.json",
+						Status:  "close",
+					},
+				},
+			},
+		},
+		{
+			name: "exists close",
+			conf: config{
+				Indices: []index{
+					{
+						Name:    "create-with-close-v2",
+						Mapping: "testdata/test.json",
+						Status:  "close",
+					},
+				},
+			},
+			setup: func(tb testing.TB) {
+				createTmpIndexHelper(tb, "create-with-close-v2")
 			},
 		},
 	}

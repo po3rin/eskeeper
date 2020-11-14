@@ -9,6 +9,7 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 ### mode
 
 - [x] CLI mode
+- [x] Index status(close only)
 - [ ] Agent mode
 
 ### sync 
@@ -43,6 +44,10 @@ index:
   - name: test-v2
     mapping: testdata/test.json
 
+  - name: close-v1
+    mapping: testdata/test.json
+    status: close
+
 alias:
   - name: alias1
     index:
@@ -61,6 +66,7 @@ results
 curl localhost:9200/_cat/indices
 yellow open test-v1 ... 1 1 0 0 208b 208b
 yellow open test-v2 ... 1 1 0 0 208b 208b
+yellow close close-v1 xxxxxxxxxxxx 1 1
 
 curl localhost:9200/_cat/aliases
 alias2 test-v2 - - - -

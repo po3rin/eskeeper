@@ -12,12 +12,13 @@ import (
 
 type config struct {
 	Indices []index `json:"index"`
-	Aliases []alias `json:"alias"`
+	Aliases []alias `json:"alias"` // supports close only
 }
 
 type index struct {
 	Name    string `json:"name"`
 	Mapping string `json:"mapping"`
+	Status  string `json:"status"`
 }
 
 type alias struct {
@@ -41,7 +42,16 @@ func yaml2Conf(reader io.Reader) (config, error) {
 }
 
 func validateConfigFormat(c config) error {
+	createIndices := make(map[string]struct{}, 0)
+
 	for _, index := range c.Indices {
+		_, exist := createIndices[index.Name]
+		if exist {
+			return fmt.Errorf("duplicated index name %v", index.Name)
+		}
+
+		createIndices[index.Name] = struct{}{}
+
 		if index.Name == "" {
 			return errors.New("index name is empty")
 		}
