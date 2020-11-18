@@ -43,8 +43,7 @@ func (c *esclient) preCheck(ctx context.Context, conf config) error {
 
 	// check target index exists
 	for _, alias := range conf.Aliases {
-		// check duplicated name
-		// fmt.Println(alias.Name)
+		// TODO: check duplicated name
 		// ok, err := c.existIndex(ctx, alias.Name)
 		// if err != nil {
 		// 	return fmt.Errorf("pre-check: checks for duplicate index and alias names: %w", err)
