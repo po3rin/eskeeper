@@ -19,6 +19,7 @@ var rootCmd = &cobra.Command{
 			viper.GetStringSlice("es_urls"),
 			eskeeper.UserName(viper.GetString("es_user")),
 			eskeeper.Pass(viper.GetString("es_pass")),
+			eskeeper.Verbose(viper.GetBool("verbose")),
 		)
 		if err != nil {
 			fmt.Println(err)
@@ -39,12 +40,10 @@ func init() {
 	viper.AutomaticEnv()
 
 	pflag.StringP("es_user", "u", "", "Elasticsearch user name")
-	viper.BindPFlags(pflag.CommandLine)
-
 	pflag.StringP("es_pass", "p", "", "Elasticsearch password")
-	viper.BindPFlags(pflag.CommandLine)
-
 	pflag.StringSliceP("es_urls", "e", []string{"http://localhost:9200"}, "Elasticserch endpoint URLs (comma delimited)")
+	pflag.BoolP("verbose", "v", false, "Make the operation more talkative")
+
 	viper.BindPFlags(pflag.CommandLine)
 }
 

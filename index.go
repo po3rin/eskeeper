@@ -154,8 +154,10 @@ func (c *esclient) syncIndices(ctx context.Context, conf config) error {
 	for _, index := range conf.Indices {
 		err := c.syncIndex(ctx, index)
 		if err != nil {
-			return fmt.Errorf("create index: %w", err)
+			c.logf("[fail] index: %v\n", index.Name)
+			return fmt.Errorf("sync index: %w", err)
 		}
+		c.logf("[synced] index: %v\n", index.Name)
 	}
 	return nil
 }

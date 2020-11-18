@@ -88,9 +88,44 @@ ESKEEPER_ES_USER=user ESKEEPER_ES_PASS=pass ESKEEPER_ES_URLS=http://localhost:92
 
 ## :mag_right: Stages
 
-eskeeper process is divided into four stages.
+eskeeper process is divided into four stages. verbose option lets you know eskeeper details.
 
-#### validation config stage
+```
+$ eskeeper < es.yaml
+loading config ...
+
+=== validation stage ===
+[pass] index: test-v1
+[pass] index: test-v2
+[pass] index: close-v1
+[pass] alias: alias1
+[pass] alias: alias2
+
+=== pre-check stage ===
+[pass] index: test-v1
+[pass] index: test-v2
+[pass] index: close-v1
+[pass] alias: alias1
+[pass] alias: alias2
+
+=== sync stage ===
+[synced] index: test-v1
+[synced] index: test-v2
+[synced] index: close-v1
+[synced] alias: alias1
+[synced] alias: alias2
+
+=== post-check stage ===
+[pass] index: test-v1
+[pass] index: test-v2
+[pass] index: close-v1
+[pass] alias: alias1
+[pass] alias: alias2
+
+succeeded
+```
+
+#### validation stage
 * Validates config yaml format
 
 #### pre-check stage 
