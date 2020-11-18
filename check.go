@@ -3,7 +3,6 @@ package eskeeper
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -71,8 +70,6 @@ func (c *esclient) preCheck(ctx context.Context, conf config) error {
 			return err
 		}
 		c.logf("[pass] index: %v\n", ix.Name)
-		// TODO: backoff
-		time.Sleep(3 * time.Second) // avoid circit breker
 	}
 
 	// check target index exists
@@ -83,8 +80,6 @@ func (c *esclient) preCheck(ctx context.Context, conf config) error {
 			return err
 		}
 		c.logf("[pass] alias: %v\n", alias.Name)
-		// TODO: backoff
-		time.Sleep(3 * time.Second) // avoid circit breker
 	}
 
 	return nil

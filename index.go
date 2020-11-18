@@ -158,8 +158,6 @@ func (c *esclient) syncIndices(ctx context.Context, conf config) error {
 			return fmt.Errorf("sync index: %w", err)
 		}
 		c.logf("[synced] index: %v\n", index.Name)
-		// TODO: backoff
-		// time.Sleep(3 * time.Second) // avoid circit breker
 	}
 	return nil
 }
