@@ -1,9 +1,14 @@
 package eskeeper
 
-import "github.com/elastic/go-elasticsearch/v7"
+import (
+	"fmt"
+
+	"github.com/elastic/go-elasticsearch/v7"
+)
 
 type esclient struct {
-	client *elasticsearch.Client
+	client  *elasticsearch.Client
+	verbose bool
 }
 
 func newEsClient(urls []string, user, pass string) (*esclient, error) {
@@ -19,4 +24,16 @@ func newEsClient(urls []string, user, pass string) (*esclient, error) {
 	return &esclient{
 		client: es,
 	}, nil
+}
+
+func (e *esclient) log(msg string) {
+	if e.verbose {
+		fmt.Println(msg)
+	}
+}
+
+func (e *esclient) logf(format string, a ...interface{}) {
+	if e.verbose {
+		fmt.Printf(format, a...)
+	}
 }

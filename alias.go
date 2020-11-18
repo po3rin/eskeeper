@@ -23,29 +23,38 @@ func (c *esclient) existAlias(ctx context.Context, alias string) (bool, error) {
 	}
 	return false, nil
 }
+func (c *esclient) syncAlias(ctx context.Context, alias alias) error {
+	i := c.client.Indices
+
+	query := aliasQuery(alias.Name, alias.Indices)
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(query); err != nil {
+		return fmt.Errorf("build query: %w", err)
+	}
+
+	res, err := i.UpdateAliases(&buf, i.UpdateAliases.WithContext(ctx))
+	if err != nil {
+		return fmt.Errorf("upsert aliases: %w", err)
+	}
+	if res.StatusCode != 200 {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return fmt.Errorf("failed to sync alias [alias=%v, statusCode=%v]", alias.Name, res.StatusCode)
+		}
+		return fmt.Errorf("failed to sync alias [alias=%v, statusCode=%v, res=%v]", alias.Name, res.StatusCode, string(body))
+	}
+	return nil
+}
 
 func (c *esclient) syncAliases(ctx context.Context, conf config) error {
 	for _, alias := range conf.Aliases {
-		i := c.client.Indices
-
-		query := aliasQuery(alias.Name, alias.Indices)
-
-		var buf bytes.Buffer
-		if err := json.NewEncoder(&buf).Encode(query); err != nil {
-			return fmt.Errorf("build query: %w", err)
-		}
-
-		res, err := i.UpdateAliases(&buf, i.UpdateAliases.WithContext(ctx))
+		err := c.syncAlias(ctx, alias)
 		if err != nil {
-			return fmt.Errorf("upsert aliases: %w", err)
+			c.logf("[fail] alias: %v\n", alias.Name)
+			return fmt.Errorf("sync alias: %w", err)
 		}
-		if res.StatusCode != 200 {
-			body, err := ioutil.ReadAll(res.Body)
-			if err != nil {
-				return fmt.Errorf("failed to sync alias [alias=%v, statusCode=%v]", alias.Name, res.StatusCode)
-			}
-			return fmt.Errorf("failed to sync alias [alias=%v, statusCode=%v, res=%v]", alias.Name, res.StatusCode, string(body))
-		}
+		c.logf("[synced] alias: %v\n", alias.Name)
 	}
 	return nil
 }

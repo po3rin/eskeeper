@@ -56,6 +56,26 @@ func TestPreCheck(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		// {
+		// 	name: "duplicated name",
+		// 	conf: config{
+		// 		Indices: []index{
+		// 			{
+		// 				Name:    "duplicated-name",
+		// 				Mapping: "testdata/test.json",
+		// 			},
+		// 		},
+		// 		Aliases: []alias{
+		// 			{
+		// 				Name: "duplicated-name",
+		// 				Indices: []string{
+		// 					"duplicated-name",
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// 	wantErr: true,
+		// },
 	}
 
 	es, err := newEsClient([]string{url}, "", "")
