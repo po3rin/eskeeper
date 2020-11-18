@@ -3,70 +3,88 @@ package eskeeper
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
 
-// TODO: alias pre-check
+func (c *esclient) preCheckIndex(ctx context.Context, ix index) error {
+	// generate uuid for pre-check create index
+	u2, err := uuid.NewV4()
+	if err != nil {
+		return fmt.Errorf("generate UUID for pre-check: %w", err)
+	}
+
+	preIndex := index{
+		Name:    fmt.Sprintf("eskeeper-%s", u2.String()),
+		Mapping: ix.Mapping,
+	}
+
+	err = c.syncIndex(ctx, preIndex)
+	if err != nil {
+		return fmt.Errorf("pre-check: pre create using random name index: %w", err)
+	}
+
+	err = c.deleteIndex(ctx, preIndex.Name)
+	if err != nil {
+		return fmt.Errorf("pre-check: delete pre-created index: %w", err)
+	}
+	return nil
+}
+
+func (c *esclient) preCheckAlias(ctx context.Context, alias alias, createIndices map[string]struct{}) error {
+	// TODO: check duplicated name
+	// ok, err := c.existIndex(ctx, alias.Name)
+	// if err != nil {
+	// 	return fmt.Errorf("pre-check: checks for duplicate index and alias names: %w", err)
+	// }
+	// if ok {
+	// 	return fmt.Errorf("pre-check: detects duplicate index and alias names %v", alias.Name)
+	// }
+
+	for _, index := range alias.Indices {
+		if _, ok := createIndices[index]; ok {
+			continue
+		}
+		ok, err := c.existIndex(ctx, index)
+		if err != nil {
+			return fmt.Errorf("pre-check: check index %v exists for alias %v: %w", index, alias.Name, err)
+		}
+		if !ok {
+			c.logf("[fail] alias: %v\n", alias.Name)
+			return fmt.Errorf("pre-check: index %v for alias %v is not found", index, alias.Name)
+		}
+	}
+
+	return nil
+}
+
 func (c *esclient) preCheck(ctx context.Context, conf config) error {
 	// use alias pre-check
 	createIndices := make(map[string]struct{}, 0)
 
 	for _, ix := range conf.Indices {
 		createIndices[ix.Name] = struct{}{}
-
-		// generate uuid for pre-check create index
-		u2, err := uuid.NewV4()
+		err := c.preCheckIndex(ctx, ix)
 		if err != nil {
 			c.logf("[fail] index: %v\n", ix.Name)
-			return fmt.Errorf("generate UUID for pre-check: %w", err)
-		}
-
-		preIndex := index{
-			Name:    fmt.Sprintf("eskeeper-%s", u2.String()),
-			Mapping: ix.Mapping,
-		}
-
-		err = c.syncIndex(ctx, preIndex)
-		if err != nil {
-			c.logf("[fail] index: %v\n", ix.Name)
-			return fmt.Errorf("pre-check: pre create using random name index: %w", err)
-		}
-
-		err = c.deleteIndex(ctx, preIndex.Name)
-		if err != nil {
-			c.logf("[fail] index: %v\n", ix.Name)
-			return fmt.Errorf("pre-check: delete pre-created index: %w", err)
+			return err
 		}
 		c.logf("[pass] index: %v\n", ix.Name)
+		// TODO: backoff
+		time.Sleep(3 * time.Second) // avoid circit breker
 	}
 
 	// check target index exists
 	for _, alias := range conf.Aliases {
-		// TODO: check duplicated name
-		// ok, err := c.existIndex(ctx, alias.Name)
-		// if err != nil {
-		// 	return fmt.Errorf("pre-check: checks for duplicate index and alias names: %w", err)
-		// }
-		// if ok {
-		// 	return fmt.Errorf("pre-check: detects duplicate index and alias names %v", alias.Name)
-		// }
-
-		for _, index := range alias.Indices {
-			if _, ok := createIndices[index]; ok {
-				continue
-			}
-			ok, err := c.existIndex(ctx, index)
-			if err != nil {
-				c.logf("[fail] alias: %v\n", alias.Name)
-				return fmt.Errorf("pre-check: check index %v exists for alias %v: %w", index, alias.Name, err)
-			}
-			if !ok {
-				c.logf("[fail] alias: %v\n", alias.Name)
-				return fmt.Errorf("pre-check: index %v for alias %v is not found", index, alias.Name)
-			}
+		err := c.preCheckAlias(ctx, alias, createIndices)
+		if err != nil {
+			c.logf("[fail] alias: %v\n", alias.Name)
+			return err
 		}
 		c.logf("[pass] alias: %v\n", alias.Name)
+		// TODO: backoff
+		time.Sleep(3 * time.Second) // avoid circit breker
 	}
 
 	return nil

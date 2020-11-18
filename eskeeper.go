@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-
-	"github.com/pkg/errors"
 )
 
 // Eskeeper manages indices & aliases.
@@ -111,11 +109,11 @@ func (e *Eskeeper) Sync(ctx context.Context, reader io.Reader) error {
 func (e *Eskeeper) Validate(ctx context.Context, reader io.Reader) error {
 	conf, err := yaml2Conf(reader)
 	if err != nil {
-		return errors.Wrap(err, "convert yaml to conf")
+		return err
 	}
 	err = e.validateConfigFormat(conf)
 	if err != nil {
-		return errors.Wrap(err, "validate config")
+		return err
 	}
 	return nil
 }
