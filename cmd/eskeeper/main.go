@@ -46,7 +46,36 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+var validate = &cobra.Command{
+	Use:   "validate",
+	Short: "Validates config",
+	Run: func(cmd *cobra.Command, args []string) {
+		k, err := eskeeper.New(
+			[]string{},
+			eskeeper.Verbose(true),
+		)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		if terminal.IsTerminal(int(os.Stdin.Fd())) {
+			fmt.Println("Currently does not support interactive mode")
+			os.Exit(1)
+		}
+
+		ctx := context.Background()
+		err = k.Validate(ctx, os.Stdin)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Println("pass")
+	},
+}
+
 func init() {
+	rootCmd.AddCommand(validate)
 	viper.SetEnvPrefix("eskeeper")
 	viper.AutomaticEnv()
 
