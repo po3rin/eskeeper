@@ -9,6 +9,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"golang.org/x/crypto/ssh/terminal"
+)
+
+const (
+	TERMINAL = "terminal"
+	PIPE     = "pipe"
 )
 
 var rootCmd = &cobra.Command{
@@ -23,6 +29,11 @@ var rootCmd = &cobra.Command{
 		)
 		if err != nil {
 			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		if terminal.IsTerminal(int(os.Stdin.Fd())) {
+			fmt.Println("Currently does not support interactive mode")
 			os.Exit(1)
 		}
 
