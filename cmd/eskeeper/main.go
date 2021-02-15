@@ -21,7 +21,7 @@ var rootCmd = &cobra.Command{
 			eskeeper.UserName(viper.GetString("es_user")),
 			eskeeper.Pass(viper.GetString("es_pass")),
 			eskeeper.Verbose(viper.GetBool("verbose")),
-			eskeeper.Verbose(viper.GetBool("skip_precheck")),
+			eskeeper.SkipPreCheck(viper.GetBool("skip_precheck")),
 		)
 		if err != nil {
 			fmt.Println(err)
