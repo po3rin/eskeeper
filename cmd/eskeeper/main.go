@@ -12,11 +12,6 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-const (
-	TERMINAL = "terminal"
-	PIPE     = "pipe"
-)
-
 var rootCmd = &cobra.Command{
 	Use:   "eskeeper",
 	Short: "eskeeper synchronizes index and alias with configuration files while ensuring idempotency.",
@@ -26,6 +21,7 @@ var rootCmd = &cobra.Command{
 			eskeeper.UserName(viper.GetString("es_user")),
 			eskeeper.Pass(viper.GetString("es_pass")),
 			eskeeper.Verbose(viper.GetBool("verbose")),
+			eskeeper.Verbose(viper.GetBool("skip_precheck")),
 		)
 		if err != nil {
 			fmt.Println(err)
@@ -83,6 +79,7 @@ func init() {
 	pflag.StringP("es_pass", "p", "", "Elasticsearch password")
 	pflag.StringSliceP("es_urls", "e", []string{"http://localhost:9200"}, "Elasticserch endpoint URLs (comma delimited)")
 	pflag.BoolP("verbose", "v", false, "Make the operation more talkative")
+	pflag.BoolP("skip_precheck", "s", false, "Skip pre-check stage")
 
 	viper.BindPFlags(pflag.CommandLine)
 }

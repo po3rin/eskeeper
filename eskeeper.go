@@ -11,9 +11,10 @@ type Eskeeper struct {
 	client *esclient
 
 	// options
-	user    string
-	pass    string
-	verbose bool
+	user         string
+	pass         string
+	verbose      bool
+	skipPreCheck bool
 }
 
 // NewOption is optional func for eskeeper.New
@@ -37,6 +38,13 @@ func Pass(pass string) NewOption {
 func Verbose(v bool) NewOption {
 	return func(e *Eskeeper) {
 		e.verbose = v
+	}
+}
+
+// SkipPreCheck is optional func for skipping pre-check-stage..
+func SkipPreCheck(v bool) NewOption {
+	return func(e *Eskeeper) {
+		e.skipPreCheck = v
 	}
 }
 
@@ -73,10 +81,12 @@ func (e *Eskeeper) Sync(ctx context.Context, reader io.Reader) error {
 		return err
 	}
 
-	e.log("\n=== pre-check stage ===")
-	err = e.client.preCheck(ctx, conf)
-	if err != nil {
-		return err
+	if !e.skipPreCheck {
+		e.log("\n=== pre-check stage ===")
+		err = e.client.preCheck(ctx, conf)
+		if err != nil {
+			return err
+		}
 	}
 
 	e.log("\n=== sync stage ===")
