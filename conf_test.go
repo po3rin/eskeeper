@@ -54,11 +54,11 @@ func TestYaml2Conf(t *testing.T) {
 						Mapping: "testdata/test.json",
 					},
 					{
-						Name:    "test-v2",
+						Name:    "reindex-v1",
 						Mapping: "testdata/test.json",
 						Reindex: reindex{
 							Source:            "test-v1",
-							Slices:            20,
+							Slices:            3,
 							WaitForCompletion: true,
 							On:                "firstCreated",
 						},
