@@ -24,19 +24,19 @@ var rootCmd = &cobra.Command{
 			eskeeper.SkipPreCheck(viper.GetBool("skip_precheck")),
 		)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stdout, err)
 			os.Exit(1)
 		}
 
 		if terminal.IsTerminal(int(os.Stdin.Fd())) {
-			fmt.Println("Currently does not support interactive mode")
+			fmt.Fprintln(os.Stdout, "Currently does not support interactive mode")
 			os.Exit(1)
 		}
 
 		ctx := context.Background()
 		err = k.Sync(ctx, os.Stdin)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stdout, err)
 			os.Exit(1)
 		}
 	},
@@ -51,19 +51,19 @@ var validate = &cobra.Command{
 			eskeeper.Verbose(true),
 		)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stdout, err)
 			os.Exit(1)
 		}
 
 		if terminal.IsTerminal(int(os.Stdin.Fd())) {
-			fmt.Println("Currently does not support interactive mode")
+			fmt.Fprintln(os.Stdout, "Currently does not support interactive mode")
 			os.Exit(1)
 		}
 
 		ctx := context.Background()
 		err = k.Validate(ctx, os.Stdin)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stdout, err)
 			os.Exit(1)
 		}
 		fmt.Println("pass")
@@ -86,7 +86,7 @@ func init() {
 
 func main() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
 	}
 }
