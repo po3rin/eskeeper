@@ -91,7 +91,7 @@ func TestSyncIndices(t *testing.T) {
 			},
 			setup: func(tb testing.TB) {
 				createTmpIndexHelper(tb, "open-v1")
-				closeIndex(tb, "open-v1")
+				closeIndexHelper(tb, "open-v1")
 			},
 		},
 		{

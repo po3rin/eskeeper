@@ -52,10 +52,45 @@ func (c *esclient) syncIndex(ctx context.Context, index index) error {
 			}
 			return fmt.Errorf("failed to create index [index=%v, statusCode=%v, res=%v]", index.Name, res.StatusCode, string(body))
 		}
+
+		// reindex --------
+
+		if index.Reindex.Source == "" {
+			return nil
+		}
+
+		ok, err := c.existIndex(ctx, index.Reindex.Source)
+		if err != nil {
+			return fmt.Errorf("check index exists for reindex process: %w", err)
+		}
+		if !ok {
+			return fmt.Errorf("reindex (%s -> %s) conf is invalid. Make sure %s index exists", index.Reindex.Source, index.Reindex.Source, index.Name)
+		}
+
+		err = c.reindex(ctx, index.Name, index.Reindex)
+		if err != nil {
+			return fmt.Errorf("reindex (%s -> %s)", index.Reindex.Source, index.Name)
+		}
 		return nil
 	}
 
 	// index already exists.
+
+	// reindex -------
+	if index.Reindex.Source != "" && index.Reindex.On == "always" {
+		ok, err = c.existIndex(ctx, index.Reindex.Source)
+		if err != nil {
+			return fmt.Errorf("check index exists for reindex process: %w", err)
+		}
+		if !ok {
+			return fmt.Errorf("reindex (%s -> %s) conf is invalid. Make sure %s index exists", index.Reindex.Source, index.Reindex.Source, index.Name)
+		}
+		err = c.reindex(ctx, index.Name, index.Reindex)
+		if err != nil {
+			return fmt.Errorf("reindex (%s -> %s)", index.Reindex.Source, index.Name)
+		}
+		return nil
+	}
 
 	// Since downtime may occur when switching aliases, only open is processed before switching aliases.
 	// TODO: refactoring.
@@ -143,9 +178,9 @@ func (c *esclient) openIndex(ctx context.Context, index index) error {
 	if res.StatusCode != 200 {
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			return fmt.Errorf("failed to open index [index= %v, statusCode=%v]", index, res.StatusCode)
+			return fmt.Errorf("failed to open index [index= %v, statusCode=%v]: %w", index, res.StatusCode, err)
 		}
-		return fmt.Errorf("failed to open index [index= %v, statusCode=%v, res=%v]", index, res.StatusCode, string(body))
+		return fmt.Errorf("failed to open index [index= %v, statusCode=%v, res=%v]: %w", index, res.StatusCode, string(body), err)
 	}
 	return nil
 }

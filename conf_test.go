@@ -44,6 +44,34 @@ func TestYaml2Conf(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "reindex",
+			yaml: "testdata/es.reindex.yaml",
+			want: config{
+				Indices: []index{
+					{
+						Name:    "test-v1",
+						Mapping: "testdata/test.json",
+					},
+					{
+						Name:    "test-v2",
+						Mapping: "testdata/test.json",
+						Reindex: reindex{
+							Source:            "test-v1",
+							Slices:            20,
+							WaitForCompletion: true,
+							On:                "firstCreated",
+						},
+					},
+				},
+				Aliases: []alias{
+					{
+						Name:    "alias1",
+						Indices: []string{"test-v2"},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
