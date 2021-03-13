@@ -16,6 +16,8 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 
 * index
 - [x] create
+- [x] status (open or close)
+- [x] reindex (only basic parameter)
 - [ ] update mapping
 - [ ] delete
 
@@ -38,8 +40,8 @@ es.yaml is indices & aliases config file.
 
 ```yaml
 index:
-  - name: test-v1
-    mapping: testdata/test.json
+  - name: test-v1 # index name
+    mapping: testdata/test.json # index setting & mapping (json)
 
   - name: test-v2
     mapping: testdata/test.json
@@ -47,6 +49,20 @@ index:
   - name: close-v1
     mapping: testdata/test.json
     status: close
+
+  # reindex test-v1 -> reindex-v1	
+  - name: reindex-v1
+    mapping: testdata/test.json
+    reindex:
+        source: test-v1 
+        slices: 3 # default=1
+        waitForCompletion: true
+
+        # 'on' field supports 2 hooks.
+        # 'reindex': only when index is created for the first time.
+        # 'always': always exec reindex.
+        on: firstCreated
+
 
 alias:
   - name: alias1
@@ -67,6 +83,7 @@ curl localhost:9200/_cat/indices
 yellow open test-v1 ... 1 1 0 0 208b 208b
 yellow open test-v2 ... 1 1 0 0 208b 208b
 yellow close close-v1 xxxxxxxxxxxx 1 1
+yellow open reindex-v1 ... 1 1 0 0 208b 208b
 
 curl localhost:9200/_cat/aliases
 alias2 test-v2 - - - -
@@ -74,7 +91,8 @@ alias1 test-v1 - - - -
 alias2 test-v1 - - - -
 ```
 
-## :triangular_ruler: Settings
+
+## :triangular_ruler: Usage
 
 eskeeper supports flag & environment value.
 

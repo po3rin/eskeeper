@@ -111,8 +111,6 @@ func (c *esclient) equalMappingsProperties(ctx context.Context, index index, map
 		return false, fmt.Errorf("get mappings: %w", err)
 	}
 
-	fmt.Println(string(res))
-
 	gotConf := make(indexConfigWithName, 0)
 
 	err = json.Unmarshal(res, &gotConf)
@@ -124,8 +122,6 @@ func (c *esclient) equalMappingsProperties(ctx context.Context, index index, map
 	if !ok {
 		return false, errors.New("get index response dose not contain index name field")
 	}
-
-	fmt.Println(v)
 
 	b, err := json.Marshal(v.Mappings)
 	if err != nil {

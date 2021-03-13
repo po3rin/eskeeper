@@ -16,15 +16,29 @@ var status = map[string]struct{}{
 	"":      struct{}{}, // default
 }
 
+var reindexOn = map[string]struct{}{
+	"always":       struct{}{},
+	"firstCreated": struct{}{},
+	"":             struct{}{}, // default
+}
+
 type config struct {
 	Indices []index `json:"index"`
 	Aliases []alias `json:"alias"` // supports close only
 }
 
 type index struct {
-	Name    string `json:"name"`
-	Mapping string `json:"mapping"`
-	Status  string `json:"status"`
+	Name    string  `json:"name"`
+	Mapping string  `json:"mapping"`
+	Status  string  `json:"status"`
+	Reindex reindex `json:"reindex"`
+}
+
+type reindex struct {
+	Source            string `json:"source"`
+	Slices            int    `json:"slices"`
+	WaitForCompletion bool   `json:"waitForCompletion"`
+	On                string `json:"on"`
 }
 
 type alias struct {
@@ -65,6 +79,16 @@ func validateIndex(index index) error {
 	_, ok := status[index.Status]
 	if !ok {
 		return fmt.Errorf("unsupported status %v", index.Status)
+	}
+
+	if index.Reindex.Source != "" {
+		if index.Status == "close" {
+			return errors.New("unsupported close status and reindex cannot be used together")
+		}
+		_, ok := reindexOn[index.Reindex.On]
+		if !ok {
+			return fmt.Errorf("unsupported reindex hook %v. [always or firstCreated]", index.Reindex.On)
+		}
 	}
 
 	return nil

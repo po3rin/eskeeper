@@ -1,0 +1,22 @@
+index:
+  - name: test-v1
+    mapping: testdata/test.json
+
+  # reindex test-v1 -> reindex-v1	
+  - name: reindex-v1
+    mapping: testdata/test.json
+    reindex:
+        source: test-v1 
+        slices: 3 # default=1
+        waitForCompletion: true
+        # 'on' field supports 2 hooks.
+        # 'reindex': only when index is created for the first time.
+        # 'always': always exec reindex.
+        on: firstCreated
+
+
+alias:
+  - name: alias1
+    index:
+      - test-v2
+

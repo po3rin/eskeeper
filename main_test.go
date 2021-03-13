@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 
 	resource, err := pool.Run(
 		"docker.elastic.co/elasticsearch/elasticsearch",
-		"7.9.2",
+		"7.11.1",
 		[]string{
 			"ES_JAVA_OPTS=-Xms512m -Xmx512m",
 			"discovery.type=single-node",
@@ -131,8 +131,29 @@ func createTmpAliasHelper(tb testing.TB, name string, index string) {
 		tb.Fatalf("failed to create alias [index= %v, statusCode=%v, res=%v]", name, res.StatusCode, string(body))
 	}
 }
+func deleteIndexHelper(tb testing.TB, indices []string) {
+	conf := elasticsearch.Config{
+		Addresses: []string{url},
+	}
+	es, err := elasticsearch.NewClient(conf)
+	if err != nil {
+		tb.Fatal(err)
+	}
+	d := es.Indices.Delete
+	res, err := d(indices)
+	if err != nil {
+		tb.Fatalf("close index: %v", err)
+	}
+	if res.StatusCode != 200 {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			tb.Fatalf("failed to close index [statusCode=%v]", res.StatusCode)
+		}
+		tb.Fatalf("failed to close index [statusCode=%v, res=%v]", res.StatusCode, string(body))
+	}
+}
 
-func closeIndex(tb testing.TB, index string) {
+func closeIndexHelper(tb testing.TB, index string) {
 	conf := elasticsearch.Config{
 		Addresses: []string{url},
 	}
@@ -151,5 +172,35 @@ func closeIndex(tb testing.TB, index string) {
 			tb.Fatalf("failed to close index [index= %v, statusCode=%v]", index, res.StatusCode)
 		}
 		tb.Fatalf("failed to close index [index= %v, statusCode=%v, res=%v]", index, res.StatusCode, string(body))
+	}
+}
+
+func postDocHelper(tb testing.TB, index string) {
+	tb.Helper()
+	conf := elasticsearch.Config{
+		Addresses: []string{url},
+	}
+	es, err := elasticsearch.NewClient(conf)
+	if err != nil {
+		tb.Fatal(err)
+	}
+
+	body := strings.NewReader(`{"title":"this is title","body":"this is body"}`)
+
+	res, err := es.Index(
+		index,
+		body,
+		es.Index.WithRefresh("true"),
+	)
+	if err != nil {
+		tb.Fatal(err)
+	}
+
+	if res.StatusCode != 201 {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			tb.Fatal(err)
+		}
+		tb.Fatalf("failed to post document [index=%v, statusCode=%v, res=%v]", index, res.StatusCode, string(body))
 	}
 }
