@@ -28,6 +28,7 @@ func TestReindex(t *testing.T) {
 				postDocHelper(tb, "reindex-src")
 			},
 			cleanup: func(tb testing.TB) {
+				deleteIndexHelper(tb, []string{"reindex-src", "reindex-dest"})
 			},
 		},
 	}

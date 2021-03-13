@@ -7,9 +7,10 @@ import (
 
 func TestSyncIndices(t *testing.T) {
 	tests := []struct {
-		name  string
-		conf  config
-		setup func(tb testing.TB)
+		name    string
+		conf    config
+		setup   func(tb testing.TB)
+		cleanup func(tb testing.TB)
 	}{
 		{
 			name: "simple",
@@ -20,6 +21,9 @@ func TestSyncIndices(t *testing.T) {
 						Mapping: "testdata/test.json",
 					},
 				},
+			},
+			cleanup: func(tb testing.TB) {
+				deleteIndexHelper(tb, []string{"create1"})
 			},
 		},
 		{
@@ -36,6 +40,9 @@ func TestSyncIndices(t *testing.T) {
 					},
 				},
 			},
+			cleanup: func(tb testing.TB) {
+				deleteIndexHelper(tb, []string{"create2", "create3"})
+			},
 		},
 		{
 			name: "idempotence",
@@ -51,6 +58,9 @@ func TestSyncIndices(t *testing.T) {
 					},
 				},
 			},
+			cleanup: func(tb testing.TB) {
+				deleteIndexHelper(tb, []string{"idempotence"})
+			},
 		},
 		{
 			name: "close",
@@ -62,6 +72,9 @@ func TestSyncIndices(t *testing.T) {
 						Status:  "close",
 					},
 				},
+			},
+			cleanup: func(tb testing.TB) {
+				deleteIndexHelper(tb, []string{"create-with-close-v1"})
 			},
 		},
 		{
@@ -78,6 +91,9 @@ func TestSyncIndices(t *testing.T) {
 			setup: func(tb testing.TB) {
 				createTmpIndexHelper(tb, "create-with-close-v2")
 			},
+			cleanup: func(tb testing.TB) {
+				deleteIndexHelper(tb, []string{"create-with-close-v2"})
+			},
 		},
 		{
 			name: "open",
@@ -93,6 +109,9 @@ func TestSyncIndices(t *testing.T) {
 				createTmpIndexHelper(tb, "open-v1")
 				closeIndexHelper(tb, "open-v1")
 			},
+			cleanup: func(tb testing.TB) {
+				deleteIndexHelper(tb, []string{"open-v1"})
+			},
 		},
 		{
 			name: "open-already-open",
@@ -103,6 +122,58 @@ func TestSyncIndices(t *testing.T) {
 						Mapping: "testdata/test.json",
 					},
 				},
+			},
+			cleanup: func(tb testing.TB) {
+				deleteIndexHelper(tb, []string{"open-already-open-v1"})
+			},
+		},
+		{
+			name: "reindex",
+			conf: config{
+				Indices: []index{
+					{
+						Name:    "reindex-v1",
+						Mapping: "testdata/test.json",
+						Reindex: reindex{
+							Source:            "reindex-v0",
+							Slices:            3,
+							WaitForCompletion: true,
+							On:                "firstCreated",
+						},
+					},
+				},
+			},
+			setup: func(tb testing.TB) {
+				createTmpIndexHelper(tb, "reindex-v0")
+				postDocHelper(tb, "reindex-v0")
+			},
+			cleanup: func(tb testing.TB) {
+				deleteIndexHelper(tb, []string{"reindex-v0", "reindex-v1"})
+			},
+		},
+		{
+			name: "reindex-already-exists",
+			conf: config{
+				Indices: []index{
+					{
+						Name:    "reindex-exists",
+						Mapping: "testdata/test.json",
+						Reindex: reindex{
+							Source:            "reindex-v0",
+							Slices:            3,
+							WaitForCompletion: true,
+							On:                "firstCreated",
+						},
+					},
+				},
+			},
+			setup: func(tb testing.TB) {
+				createTmpIndexHelper(tb, "reindex-already-exists")
+				createTmpIndexHelper(tb, "reindex-v0")
+				postDocHelper(tb, "reindex-v0")
+			},
+			cleanup: func(tb testing.TB) {
+				deleteIndexHelper(tb, []string{"reindex-already-exists", "reindex-v0"})
 			},
 		},
 	}
@@ -121,6 +192,9 @@ func TestSyncIndices(t *testing.T) {
 			err := es.syncIndices(ctx, tt.conf)
 			if err != nil {
 				t.Error(err)
+			}
+			if tt.cleanup != nil {
+				tt.cleanup(t)
 			}
 		})
 	}

@@ -131,6 +131,27 @@ func createTmpAliasHelper(tb testing.TB, name string, index string) {
 		tb.Fatalf("failed to create alias [index= %v, statusCode=%v, res=%v]", name, res.StatusCode, string(body))
 	}
 }
+func deleteIndexHelper(tb testing.TB, indices []string) {
+	conf := elasticsearch.Config{
+		Addresses: []string{url},
+	}
+	es, err := elasticsearch.NewClient(conf)
+	if err != nil {
+		tb.Fatal(err)
+	}
+	d := es.Indices.Delete
+	res, err := d(indices)
+	if err != nil {
+		tb.Fatalf("close index: %v", err)
+	}
+	if res.StatusCode != 200 {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			tb.Fatalf("failed to close index [statusCode=%v]", res.StatusCode)
+		}
+		tb.Fatalf("failed to close index [statusCode=%v, res=%v]", res.StatusCode, string(body))
+	}
+}
 
 func closeIndexHelper(tb testing.TB, index string) {
 	conf := elasticsearch.Config{
