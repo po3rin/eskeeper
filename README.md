@@ -4,8 +4,6 @@
   <p align="center">Tool managing Elasticsearch Index</p>
 </p>
 
----
-
 <img src="https://img.shields.io/badge/go-v1.16-blue.svg"/> [![GoDoc](https://godoc.org/github.com/po3rin/eskeeper?status.svg)](https://godoc.org/github.com/po3rin/eskeeper) ![Go Test](https://github.com/po3rin/eskeeper/workflows/Go%20Test/badge.svg) 
 
 eskeeper synchronizes index and alias with configuration files while ensuring idempotency. It still only supports WRITE. DELETE is not yet supported because the operation of deleting persistent data is dangerous and needs to be implemented carefully. 
