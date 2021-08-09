@@ -65,7 +65,7 @@ index:
         waitForCompletion: true
 
         # 'on' field supports 2 hooks.
-        # 'reindex': only when index is created for the first time.
+        # 'firstCreated': only when index is created for the first time.
         # 'always': always exec reindex.
         on: firstCreated
 
