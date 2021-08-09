@@ -24,6 +24,7 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 - [x] status (open or close)
 - [x] reindex (only basic parameter)
 - [x] status(open/close only)
+- [ ] lifecycke
 - [ ] update mapping
 - [ ] delete
 
@@ -110,7 +111,7 @@ eskeeper -u user -p pass -e=http://localhost:9200,http://localhost9300 < testdat
 ESKEEPER_ES_USER=user ESKEEPER_ES_PASS=pass ESKEEPER_ES_URLS=http://localhost:9200 eskeeper < testdata/es.yaml
 ```
 
-## :mag_right: Stages
+## :mag_right: Internal 4 Stages
 
 eskeeper process is divided into four stages. verbose option lets you know eskeeper details.
 
