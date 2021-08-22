@@ -15,7 +15,7 @@ func (c *esclient) preCheckIndex(ctx context.Context, ix index) error {
 	}
 
 	preIndex := index{
-		Name:    fmt.Sprintf("eskeeper-%s", u2.String()),
+		Name:    fmt.Sprintf("eskeeper-%s-%s", ix.Name, u2.String()),
 		Mapping: ix.Mapping,
 	}
 
