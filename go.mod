@@ -5,8 +5,10 @@ go 1.16
 require (
 	github.com/Cside/jsondiff v0.0.0-20180209072652-0e50d980b458
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
+	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
+	github.com/cenkalti/backoff/v4 v4.1.1 // indirect
 	github.com/containerd/continuity v0.0.0-20200928162600-f2cc35102c2a // indirect
 	github.com/creack/pty v1.1.9 // indirect
 	github.com/elastic/go-elasticsearch v0.0.0
