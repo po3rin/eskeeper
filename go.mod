@@ -1,6 +1,6 @@
 module github.com/po3rin/eskeeper
 
-go 1.17.1
+go 1.17
 
 require (
 	github.com/Cside/jsondiff v0.0.0-20180209072652-0e50d980b458
