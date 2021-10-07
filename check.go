@@ -63,8 +63,18 @@ func (c *esclient) preCheck(ctx context.Context, conf config) error {
 	createIndices := make(map[string]struct{}, 0)
 
 	for _, ix := range conf.Indices {
+		ok, err := c.existIndex(ctx, ix.Name)
+		if err != nil {
+			return fmt.Errorf("pre-check: check index %v exists: %w", ix.Name, err)
+		}
+		if ok {
+			createIndices[ix.Name] = struct{}{}
+			c.logf("[skip] index %v already exists\n", ix.Name)
+			continue
+		}
+
 		createIndices[ix.Name] = struct{}{}
-		err := c.preCheckIndex(ctx, ix)
+		err = c.preCheckIndex(ctx, ix)
 		if err != nil {
 			c.logf("[fail] index: %v\n", ix.Name)
 			return err
