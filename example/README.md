@@ -29,7 +29,7 @@ Next, prepare index setting JSON file `test.json`. The content of this file is t
     "number_of_replicas": 1,
     "analysis": {
       "analyzer": {
-        "test_analyzer": {docker
+        "test_analyzer": {
           "type": "custom",
           "tokenizer": "standard",
           "filter": ["lowercase"]
