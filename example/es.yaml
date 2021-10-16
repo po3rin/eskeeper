@@ -1,0 +1,31 @@
+index:
+  - name: test-v1 # index name
+    mapping: test.json # index setting & mapping (json)
+
+  - name: test-v2
+    mapping: test.json
+
+  - name: close-v1
+    mapping: test.json
+    status: close
+
+  # - name: test-v3
+  #   mapping: test.json
+
+  # - name: test-v4
+  #   mapping: test.json
+  #   reindex:
+  #       source: test-v3
+  #       waitForCompletion: false
+  #       on: firstCreated
+
+alias:
+  - name: alias1
+    index:
+      - test-v1
+
+  # multi indicies
+  - name: alias2
+    index:
+      - test-v1
+      - test-v2

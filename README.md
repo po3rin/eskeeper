@@ -8,6 +8,8 @@
 
 eskeeper synchronizes index and alias with configuration files while ensuring idempotency. It still only supports WRITE. DELETE is not yet supported because the operation of deleting persistent data is dangerous and needs to be implemented carefully. 
 
+:clipboard: [A Tour of eskeeper](https://github.com/po3rin/eskeeper/blob/main/example/README.md) explains more detail usage.
+
 ## :muscle: Currently supports
 
 ### mode
@@ -31,8 +33,11 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 - [x] update
 - [ ] delete
 
+## :four_leaf_clover: How to use
 
-## :four_leaf_clover: Quick Start
+:clipboard: [A Tour of eskeeper](https://github.com/po3rin/eskeeper/blob/main/example/README.md) explains more detail usage.
+
+###  Quick Start
 
 eskeeper recieves yaml format data from stdin.
 
@@ -98,7 +103,7 @@ alias2 test-v1 - - - -
 ```
 
 
-## :triangular_ruler: Usage
+### :triangular_ruler: CLI Options
 
 eskeeper supports flag & environment value.
 
@@ -122,7 +127,7 @@ pre-check stage is slow processing. you can skip pre-check stage using -s flag.
 eskeeper -s < testdata/es.yaml
 ```
 
-## :mag_right: Internal 4 Stages
+## :mag_right: Internals
 
 eskeeper process is divided into four stages. verbose option lets you know eskeeper details.
 
