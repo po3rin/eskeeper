@@ -13,8 +13,6 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 ### mode
 
 - [x] CLI mode
-- [x] Index status(open/close only)
-- [x] Reindex
 - [ ] Agent mode
 
 ### sync 
@@ -36,7 +34,7 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 
 ## :four_leaf_clover: Quick Start
 
-eskeeper recieves yaml format data form stdin.
+eskeeper recieves yaml format data from stdin.
 
 ```bash
 $ go get -u github.com/po3rin/eskeeper/cmd/eskeeper
@@ -109,6 +107,18 @@ eskeeper -u user -p pass -e=http://localhost:9200,http://localhost9300 < testdat
 
 # use env
 ESKEEPER_ES_USER=user ESKEEPER_ES_PASS=pass ESKEEPER_ES_URLS=http://localhost:9200 eskeeper < testdata/es.yaml
+```
+
+eskeeper can also execute validation only with validate subcommand.
+
+```bash
+eskeeper validate < testdata/es.yaml
+```
+
+pre-check stage is slow processing. you can skip pre-check stage using -s flag.
+
+```bash
+eskeeper -s < testdata/es.yaml
 ```
 
 ## :mag_right: Internal 4 Stages
