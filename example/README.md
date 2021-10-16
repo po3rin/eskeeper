@@ -13,12 +13,15 @@ example
 └── test.json
 ```
 
+## start Elasticsearch
+
 First, start Elasticserarch.
 
 ```bash
 $ docker-compose up -d --build
-$ curl localhost:9200
 ```
+
+## create indices & aliases
 
 Next, prepare index setting JSON file `test.json`. The content of this file is the same as the request body of the [Create index API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html)
 
@@ -99,6 +102,8 @@ alias2 test-v2 - - - -
 alias1 test-v1 - - - -
 alias2 test-v1 - - - -
 ```
+
+## change index setting and switch alias
 
 Next, change mapping & config file.
 
@@ -182,6 +187,8 @@ alias2 test-v3 - - - -
 alias1 test-v1 - - - -
 alias2 test-v1 - - - -
 ```
+
+## reindex 
 
 Finally, let's try reindex. put data to `test-v3` index.
 
