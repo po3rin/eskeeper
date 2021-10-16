@@ -83,7 +83,7 @@ alias:
       - test-v2
 ```
 
-You can see in this file that you create 3 indexes and 2 aliases. You can create an index with the same settings as the test.json created earlier. `close-v1` index use `status: close`. This allows closed indices to not have to maintain internal data structures for indexing or searching documents, resulting in a smaller overhead on the cluster.
+You can see in this file that you create 3 indices and 2 aliases. You can create an index with the same settings as the test.json created earlier. `close-v1` index use `status: close`. This allows closed indices to not have to maintain internal data structures for indexing or searching documents, resulting in a smaller overhead on the cluster.
 
 `alias` field declares alias settings. You can redirection the index without downtime.
 
