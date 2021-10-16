@@ -37,11 +37,12 @@ eskeeper synchronizes index and alias with configuration files while ensuring id
 eskeeper recieves yaml format data from stdin.
 
 ```bash
-$ go get -u github.com/po3rin/eskeeper/cmd/eskeeper
+$ go install github.com/po3rin/eskeeper/cmd/eskeeper
 $ eskeeper < es.yaml
 ```
 
-es.yaml is indices & aliases config file.
+es.yaml is indices & aliases config file. 
+Below is an example of es.yaml.
 
 ```yaml
 index:
