@@ -12,14 +12,14 @@ require (
 	github.com/containerd/continuity v0.0.0-20200928162600-f2cc35102c2a // indirect
 	github.com/creack/pty v1.1.9 // indirect
 	github.com/elastic/go-elasticsearch v0.0.0
-	github.com/elastic/go-elasticsearch/v7 v7.11.0
+	github.com/elastic/go-elasticsearch/v7 v7.15.1
 	github.com/evanphx/json-patch v4.9.0+incompatible // indirect
 	github.com/fatih/color v1.10.0 // indirect
-	github.com/goccy/go-yaml v1.8.9
-	github.com/gofrs/uuid v4.0.0+incompatible
+	github.com/goccy/go-yaml v1.9.4
+	github.com/gofrs/uuid v4.1.0+incompatible
 	github.com/hokaccha/go-prettyjson v0.0.0-20190818114111-108c894c2c0e // indirect
 	github.com/itchyny/astgen-go v0.0.0-20200815150004-12a293722290 // indirect
-	github.com/itchyny/gojq v0.12.2
+	github.com/itchyny/gojq v0.12.5
 	github.com/kataras/pio v0.0.10
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
@@ -30,14 +30,11 @@ require (
 	github.com/po3rin/bmfzf v0.0.2
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
-	github.com/spf13/cobra v1.1.3
+	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.7.1
-	github.com/stretchr/testify v1.6.1 // indirect
-	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	golang.org/x/sys v0.0.0-20210313110737-8e9fff1a3a18 // indirect
+	github.com/spf13/viper v1.9.0
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d // indirect
-	golang.org/x/text v0.3.5 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.30.0 // indirect
