@@ -1,3 +1,7 @@
+deleteUndeclaredIndexConfig:
+  - name: test-v*
+    status: close
+
 index:
   - name: test-v1 # index name
     mapping: test.json # index setting & mapping (json)

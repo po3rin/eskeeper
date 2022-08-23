@@ -105,8 +105,8 @@ func (c *esclient) syncIndex(ctx context.Context, index index) error {
 }
 
 func (c *esclient) deleteIndex(ctx context.Context, index string) error {
-	delete := c.client.Indices.Delete
-	res, err := delete([]string{index}, delete.WithContext(ctx))
+	del := c.client.Indices.Delete
+	res, err := del([]string{index}, del.WithContext(ctx))
 	if err != nil {
 		return fmt.Errorf("delete index: %w", err)
 	}

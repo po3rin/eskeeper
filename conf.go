@@ -23,8 +23,9 @@ var reindexOn = map[string]struct{}{
 }
 
 type config struct {
-	Indices []index `json:"index"`
-	Aliases []alias `json:"alias"` // supports close only
+	Indices      []index        `json:"index"`
+	Aliases      []alias        `json:"alias"` // supports close only
+	DeleteConfig []deleteConfig `json"deleteUndeclaredIndexConfig"`
 }
 
 type index struct {
@@ -44,6 +45,11 @@ type reindex struct {
 type alias struct {
 	Name    string   `json:"name"`
 	Indices []string `json:"index"`
+}
+
+type deleteConfig struct {
+	Name   string `json:"name"`
+	Status string `json:"status"`
 }
 
 func yaml2Conf(reader io.Reader) (config, error) {
